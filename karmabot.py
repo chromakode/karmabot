@@ -14,6 +14,9 @@ except ImportError:
 
 def created_timestamp(who, where):
     return {"who":who, "when":time.time(), "where":where}
+    
+def bold(text):
+    return u"\u0002{0}\u000F".format(text)
 
 class KarmaData:
     def __init__(self, filename):
@@ -84,7 +87,7 @@ class KarmaBot(irc.IRCClient):
         irc.IRCClient.msg(self, user, message, length)
 
     def privmsg(self, user, channel, msg):  
-        log.msg("[%s] %s: %s" % (channel, user, msg))
+        log.msg("[{channel}] {user}: {msg}".format(channel=channel, user=user, msg=msg))
         msg = msg.decode("utf-8")
         nick = user.split("!", 1)[0]
         
@@ -97,7 +100,7 @@ class KarmaBot(irc.IRCClient):
                 thing["karma"] += 1
             else:
                 thing["karma"] -= 1
-            log.msg("(%s)%s" % (repr(thing_name), op))
+            log.msg("({name){op}".format(name=repr(thing_name), op=op))
         msg = msg.replace("++","").replace("--","")
         
         # Try to find a command in the message
@@ -109,7 +112,7 @@ class KarmaBot(irc.IRCClient):
             who = user if channel == self.nickname else channel
         
         if command:
-            log.msg("Command from %s by %s: %s" % (who, user, repr(command)))
+            log.msg("Command from {who} by {user}: {cmd}".format(who=who, user=user, cmd=repr(command)))
             
             # Queries
             if command.lower() in self.karma.things:
@@ -157,11 +160,11 @@ class KarmaBot(irc.IRCClient):
             self.msg(who, random.choice(self.huh_msgs))        
                     
     def tell_yes(self, who, nick):
-        self.msg(who, "%s, %s." % (random.choice(self.affirmative_prefixes), nick))     
+        self.msg(who, "{yesmsg}, {nick}.".format(yesmsg=random.choice(self.affirmative_prefixes), nick=nick))     
                 
     def tell_about(self, who, what):
         if what.lower() in self.karma.things:
-            log.msg("Telling %s about %s" % (who, repr(what)))
+            log.msg("Telling {who} about {what}".format(who=who, what=repr(what)))
             thing = self.karma.get_thing(what)
             
             replies = (desc["text"] for desc in thing["desc"]
@@ -172,7 +175,11 @@ class KarmaBot(irc.IRCClient):
             desc = ", ".join(desc["text"] for desc in thing["desc"]
                             if "reply" not in desc or desc["reply"]==False)
             if desc or thing["karma"] != 0:
-                self.msg(who, u"\u0002%s\u000F: %s(%s)" % (thing["name"], desc+" " if desc else "", thing["karma"]))
+                self.msg(who, "{name}({karma}): {desc}".format(
+                    name  = bold(thing["name"]),
+                    desc  = desc+" " if desc else "",
+                    karma = thing["karma"])
+                )
         else:
             self.msg(who, random.choice(self.huh_msgs))
 
