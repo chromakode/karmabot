@@ -109,7 +109,7 @@ class KarmaBot(irc.IRCClient):
         # Addressed (either in channel or by private message)
         if msg.startswith(self.nickname):
             command = msg[len(self.factory.nick):].lstrip(" ,:").rstrip()
-            who = user if channel == self.nickname else channel
+            who = nick if channel == self.nickname else channel
         
         if command:
             log.msg("Command from {who} by {user}: {cmd}".format(who=who, user=user, cmd=repr(command)))
