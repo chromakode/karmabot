@@ -2,6 +2,8 @@ import thing
 import command
 import ircutils
 
+created_timestamp = thing.created_timestamp
+
 @thing.facet_classes.register
 class DescriptionFacet(thing.ThingFacet):
     name = "description"
@@ -13,7 +15,7 @@ class DescriptionFacet(thing.ThingFacet):
     
     @commands.add("{thing} is {description}", help="add a description to {thing}")
     def describe(self, thing, description, context):
-        self.descriptions.append(description)
+        self.descriptions.append({"created":created_timestamp(context), "text":description})
     
     @property
     def data(self):
@@ -24,7 +26,7 @@ class DescriptionFacet(thing.ThingFacet):
         return self.data
         
     def present(self):
-        return ", ".join(self.descriptions) or "<no description>"
+        return ", ".join(desc["text"] for desc in self.descriptions) or "<no description>"
 
 @thing.presenters.register(set(["name", "description"]))
 def present(thing):

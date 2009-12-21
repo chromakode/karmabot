@@ -9,17 +9,17 @@ from twisted.python import log
 import thing
 import command
 
-from facets import karma, description, name
+from facets import karma, description, name, irc as ircfacet
 
 class Context(object):
     def __init__(self, who, where, bot):
         self.who = who
         self.where = where
-        self._bot = bot
+        self.bot = bot
         self.replied = False
         
     def reply(self, msg):
-        self._bot.msg(self.where, msg)
+        self.bot.msg(self.where, msg)
         self.replied = True
 
 class KarmaBot(irc.IRCClient):
@@ -51,12 +51,18 @@ class KarmaBot(irc.IRCClient):
         else:
             key = None
         self.join(channel, key)
+        
+    def topicUpdated(self, user, channel, newTopic):
+        thing = self.things.get_thing(channel, Context(user, channel, self))
+        thing.facets["ircchannel"].topic = newTopic
 
     def msg(self, user, message, length = None):
         # Force conversion from unicode to utf-8
         if type(message) is unicode:
             message = message.encode("utf-8")
-        irc.IRCClient.msg(self, user, message, length)
+        
+        for line in message.split("\n"):
+            irc.IRCClient.msg(self, user, line, length)
 
     def privmsg(self, user, channel, msg):  
         log.msg("[{channel}] {user}: {msg}".format(channel=channel, user=user, msg=msg))

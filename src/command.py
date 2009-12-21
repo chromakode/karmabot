@@ -23,7 +23,7 @@ class CommandParser(object):
     def handle_command(self, text, context, thingstore):
         command, arguments = self.parse(text)
         if command:
-            thing_name = arguments["thing"]
+            thing_name = arguments["thing"].strip("()")
             facet_name = command.parent.name
             thing = thingstore.get_thing(thing_name, context, with_facet=facet_name)
             if thing:
@@ -84,7 +84,7 @@ class Command(object):
         def sub_parameter(match):
             parameters.append(match.group(1))
             if match.group(1) == "thing":
-                return r"((?:\(\w+\))|\w+)"
+                return r"((?:\([#\w ]+\))|[#\w]+)"
             else:
                 return r"([\w ]+)"
         
