@@ -30,7 +30,7 @@ class IRCChannelFacet(thing.ThingFacet):
         self.data["topic"] = value
 
 @thing.presenters.register(set(["ircchannel"]))
-def present(thing):
+def present(thing, context):
     facet = thing.facets["ircchannel"]
     if facet.topic:
         return "Topic: {topic}".format(topic=facet.topic)
