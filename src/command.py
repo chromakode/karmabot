@@ -88,9 +88,9 @@ class Command(object):
         def sub_parameter(match):
             parameters.append(match.group(1))
             if match.group(1) == "thing":
-                return r"((?:\([#\w ]+\))|[#\w]+)"
+                return r"((?:\([#!?\w ]+\))|[#!?\w]+)"
             else:
-                return r"([\w ]+)"
+                return r"([!?'\w ]+)"
         
         regex = self.format
         regex = regex.replace("+", r"\+")
