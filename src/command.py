@@ -90,7 +90,7 @@ class Command(object):
             if match.group(1) == "thing":
                 return r"((?:\([#!?\w ]+\))|[#!?\w]+)"
             else:
-                return r"([!?'\w ]+)"
+                return r"(.+?)"
         
         regex = self.format
         regex = regex.replace("+", r"\+")
