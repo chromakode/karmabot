@@ -13,8 +13,8 @@ class NameFacet(thing.ThingFacet):
     
     @commands.add("{thing}", help="show information about {thing}")
     def describe(self, thing, context):
-        context.reply(thing.describe())
+        context.reply(thing.describe(context))
 
 @thing.presenters.register(set(["name"]), order=-10)
-def present(thing):
+def present(thing, context):
     return "{name}:".format(name = ircutils.bold(thing.name))

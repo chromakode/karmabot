@@ -117,8 +117,8 @@ class Thing(object):
     def add_facet(self, facet):
         self.facets[facet.__class__.name] = facet
         
-    def describe(self):
-        return "\n".join(filter(None, (presenter(self) for presenter in presenters.iter_presenters(self))))
+    def describe(self, context):
+        return "\n".join(filter(None, (presenter(self, context) for presenter in presenters.iter_presenters(self))))
 
 class ThingStore(object):
     def __init__(self, filename):
@@ -138,6 +138,10 @@ class ThingStore(object):
 
     def save(self):
         json.dump(self.data, open(self.filename, "w"), sort_keys=True, indent=4)
+        
+    @property
+    def count(self):
+        return len(self.things)
         
     def _id_from_name(self, name):
         name = name.strip()

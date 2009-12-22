@@ -9,7 +9,7 @@ from twisted.python import log
 import thing
 import command
 
-from facets import karma, description, name, irc as ircfacet
+VERSION = "0.2"
 
 class Context(object):
     def __init__(self, who, where, bot):
@@ -158,4 +158,5 @@ def main():
     reactor.run()
 
 if __name__ == "__main__":
+    from facets import bot, karma, description, name, irc as ircfacet
     main()

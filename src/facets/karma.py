@@ -26,7 +26,7 @@ class KarmaFacet(thing.ThingFacet):
         return sum(self.data.itervalues())
 
 @thing.presenters.register(set(["name", "karma"]))
-def present(thing):
+def present(thing, context):
     text = "{name}({karma})".format(
         name  = ircutils.bold(thing.name),
         karma = thing.facets["karma"].karma
@@ -35,7 +35,7 @@ def present(thing):
     
     
 @thing.presenters.register(set(["name", "karma", "description"]))
-def present(thing):
+def present(thing, context):
     text = "{name}({karma}): {descriptions}".format(
         name         = ircutils.bold(thing.name),
         karma        = thing.facets["karma"].karma,

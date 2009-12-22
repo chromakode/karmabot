@@ -29,7 +29,7 @@ class DescriptionFacet(thing.ThingFacet):
         return ", ".join(desc["text"] for desc in self.descriptions) or "<no description>"
 
 @thing.presenters.register(set(["name", "description"]))
-def present(thing):
+def present(thing, context):
     text = "{name}: {descriptions}".format(
         name         = ircutils.bold(thing.name),
         descriptions = thing.facets["description"].present()
