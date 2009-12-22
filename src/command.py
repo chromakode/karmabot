@@ -40,6 +40,9 @@ class CommandSet(object):
         self.commands = []
         self.search = search
         
+    def __iter__(self):
+        return iter(self.commands)
+        
     def create_child_set(self, name):
         cmdset = CommandSet(name, self)
         self.children.append(cmdset)
@@ -48,6 +51,7 @@ class CommandSet(object):
     def add(self, format, help=None):
         def doit(handler):
             self.commands.append(Command(self, format, handler, help))
+            return handler
         
         return doit
             

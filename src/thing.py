@@ -13,6 +13,8 @@ def created_timestamp(context):
 
 class ThingFacet(object):
     name = "thing"
+    commands = None
+    listens = None
 
     def __init__(self, thing):
         self._thing = thing

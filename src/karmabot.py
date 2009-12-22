@@ -161,5 +161,5 @@ def main():
     reactor.run()
 
 if __name__ == "__main__":
-    from facets import bot, karma, description, name, irc as ircfacet
+    from facets import bot, karma, description, name, help, irc as ircfacet
     main()
