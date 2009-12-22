@@ -18,10 +18,13 @@ class Context(object):
         self.bot = bot
         self.replied = False
         
-    def reply(self, msg):
-        self.bot.msg(self.where, msg)
-        self.replied = True
-
+    def reply(self, msg, where=None, replied=True):
+        if not where:
+            where = self.where
+            
+        self.bot.msg(where, msg)
+        self.replied = replied
+        
 class KarmaBot(irc.IRCClient):
     affirmative_prefixes = ["Affirmative", "Alright", "Done", "K", "OK", "Okay", "Sure", "Yes"]
     huh_msgs = ["Huh?", "What?"]

@@ -17,8 +17,9 @@ class IRCChannelFacet(thing.ThingFacet):
         
     @commands.add("leave {thing}", help="leave the channel {thing}")
     def join(self, thing, context):
-        context.reply("Bye!")
-        context.bot.leave(thing.name.encode("utf-8"))
+        channel = thing.name.encode("utf-8")
+        context.reply("Bye!", where=channel)
+        context.bot.leave(channel)
         
     @property
     def topic(self):
