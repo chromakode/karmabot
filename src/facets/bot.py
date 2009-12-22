@@ -6,11 +6,12 @@ import ircutils
 @thing.facet_classes.register
 class KarmaBotFacet(thing.ThingFacet):
     name = "karmabot"
-    listens = command.listen.create_child_set(name)
     
     @classmethod
     def does_attach(cls, thing):
         return thing.name == "karmabot"
+        
+    #TODO: add save/reload/quit commands
         
 @thing.presenters.register(set(["karmabot", "name", "karma", "description"]))
 def present(thing, context):
