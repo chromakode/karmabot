@@ -121,6 +121,8 @@ class Thing(object):
         return "\n".join(filter(None, (presenter(self, context) for presenter in presenters.iter_presenters(self))))
 
 class ThingStore(object):
+    FORMAT = "2"
+
     def __init__(self, filename):
         self.filename = filename
         self.data = None
@@ -130,7 +132,7 @@ class ThingStore(object):
         try:
             self.data = json.load(open(self.filename))
         except IOError:
-            self.data = {"things":dict()}
+            self.data = {"things":dict(), "version":ThingStore.FORMAT}
         
         self.things = dict()
         for thing_id, thing_data in self.data["things"].iteritems():
@@ -148,6 +150,11 @@ class ThingStore(object):
         thing_id = name.lower()
         return thing_id
         
+    def add_thing(self, thing_id, thing):
+        if not thing_id in self.things:
+            self.things[thing_id] = thing
+            self.data["things"][thing_id] = thing.data
+        
     def get_thing(self, name, context, with_facet=None):
         name = name.strip()
         thing_id = self._id_from_name(name)
@@ -160,6 +167,5 @@ class ThingStore(object):
         if with_facet is not None and not with_facet in thing.facets:
             return None
         else:           
-            self.things[thing_id] = thing
-            self.data["things"][thing_id] = thing.data
+            self.add_thing(thing_id, thing)
             return self.things[thing_id]
