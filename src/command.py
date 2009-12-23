@@ -1,44 +1,45 @@
 import re
 import itertools
 
+# TODO: regular expressions in this module should be replaced with something more robust and more efficient.
+
 class CommandParser(object):
-    def __init__(self, regex, command_index):
-        self._regex = re.compile(regex, re.U)
-        self._command_index = command_index
+    def __init__(self, command_infos):
+        self._command_infos = command_infos
         
-    def parse(self, text):
-        match = self._regex.search(text)
-        if match and match.lastindex:
-            command, parameters = self._command_index[match.lastindex]
-            
-            parameter_values = match.group(*range(match.lastindex+1, match.lastindex+len(parameters)+1))
-            if type(parameter_values) is not tuple:
-                # Work around the fact that group() returns a string if only one item is requested
-                parameter_values = [parameter_values]
-            
-            return command, dict(zip(parameters, parameter_values))
-        else:
-            return None, None
+    def iter_parses(self, text):
+        for command_info in self._command_infos:        
+            match = command_info["re"].search(text)
+            if match:                
+                yield command_info["command"], match.groupdict()
+                if command_info["exclusive"]:
+                    return
         
     def handle_command(self, text, context, thingstore):
-        command, arguments = self.parse(text)
-        if command:
-            thing_name = arguments["thing"].strip("()")
-            facet_name = command.parent.name
-            thing = thingstore.get_thing(thing_name, context, with_facet=facet_name)
-            if thing:
-                arguments["thing"] = thing
-                return command.handler(arguments["thing"].facets[facet_name], context=context, **arguments)
+        handled = False
+        for command, arguments in self.iter_parses(text):
+            if "thing" in arguments:
+                thing_name = arguments["thing"].strip("()")
+                facet_name = command.parent.name
+                thing = thingstore.get_thing(thing_name, context, with_facet=facet_name)
+                if thing:
+                    arguments["thing"] = thing
+                    command.handler(arguments["thing"].facets[facet_name], context=context, **arguments)
+                    handled = True
+                    
+            else:
+                command.handler(context)
 
-        return False
+        return handled
 
 class CommandSet(object):
-    def __init__(self, name, parent=None, search=False):
+    def __init__(self, name, regex_format="{0}", parent=None, exclusive=False):
         self.name = name
+        self.regex_format = regex_format
         self.parent = parent
+        self.exclusive = exclusive
         self.children = []
         self.commands = []
-        self.search = search
         
     def __iter__(self):
         return iter(self.commands)
@@ -61,19 +62,19 @@ class CommandSet(object):
             for command in itertools.chain(cmdset.commands, *child_commands):
                 yield command
         
-        command_index = dict()
-        regexes = []
-        group = 1
+        command_infos = []
         for command in traverse_commands(self):
-            regex, parameters = command.to_regex()
+            regex = command.to_regex()
+            formatted_regex = self.regex_format.format(regex)
             
-            group_format = "({0})" if self.search else "(^{0}$)"
-            regexes.append(group_format.format(regex))
-            command_index[group] = (command, parameters)
+            command_info = {
+                "re"        : re.compile(formatted_regex),
+                "command"   : command,
+                "exclusive" : self.exclusive
+            }
+            command_infos.append(command_info)
             
-            group += 1 + len(parameters)
-                
-        return CommandParser("|".join(regexes), command_index)                
+        return CommandParser(command_infos)
 
 # TODO: stripping listen commands such as --/++
 class Command(object):
@@ -85,19 +86,21 @@ class Command(object):
         self.visible = visible
     
     def to_regex(self):
-        parameters = []
         def sub_parameter(match):
-            parameters.append(match.group(1))
-            if match.group(1) == "thing":
-                return r"((?:\([#!?\w ]+\))|[#!?\w]+)"
+            name = match.group(1)
+            if name == "thing":
+                parameter_regex = r"(?:\([#!?\w ]+\))|[#!?\w]+"
             else:
-                return r"(.+?)"
+                # This regex may come back to haunt me.
+                parameter_regex = r".+?"
+            
+            return r"(?P<{name}>{regex})".format(name=name, regex=parameter_regex)
         
         regex = self.format
         regex = regex.replace("+", r"\+")
         regex = re.sub(r"{(\w+)}", sub_parameter, regex)
-        return regex, parameters
+        return regex
 
-listen = CommandSet("listen", search=True)
-thing = CommandSet("thing")
+listen = CommandSet("listen", exclusive=True)
+thing = CommandSet("thing", regex_format="(^{0}$)")
 

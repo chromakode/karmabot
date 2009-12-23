@@ -12,11 +12,15 @@ import command
 VERSION = "0.2"
 
 class Context(object):
-    def __init__(self, who, where, bot):
-        self.who = who
+    def __init__(self, user, where, bot):
+        self.user = user
         self.where = where
         self.bot = bot
         self.replied = False
+        
+    @property
+    def who(self):
+        return self.user.split("!", 1)[0]
         
     def reply(self, msg, where=None, replied=True):
         if not where:
@@ -70,9 +74,8 @@ class KarmaBot(irc.IRCClient):
     def privmsg(self, user, channel, msg):  
         log.msg("[{channel}] {user}: {msg}".format(channel=channel, user=user, msg=msg))
         msg = msg.decode("utf-8")
-        nick = user.split("!", 1)[0]
-        who = nick if channel == self.nickname else channel
-        context = Context(nick, who, self)
+        where = nick if channel == self.nickname else channel
+        context = Context(user, where, self)
         
         self.listen_parser.handle_command(msg, context, self.things)
         
@@ -81,7 +84,7 @@ class KarmaBot(irc.IRCClient):
         if msg.startswith(self.nickname):
             command = msg[len(self.factory.nick):].lstrip(" ,:").rstrip()
             if self.thing_command_parser.handle_command(command, context, self.things) == False:
-                self.msg(who, random.choice(self.huh_msgs))
+                self.msg(where, random.choice(self.huh_msgs))
             else:
                 if not context.replied:
                     self.tell_yes(who, nick)
