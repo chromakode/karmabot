@@ -19,8 +19,12 @@ class Context(object):
         self.replied = False
         
     @property
-    def who(self):
+    def nick(self):
         return self.user.split("!", 1)[0]
+        
+    @property
+    def who(self):
+        return self.nick
         
     def reply(self, msg, where=None, replied=True):
         if not where:
@@ -87,7 +91,7 @@ class KarmaBot(irc.IRCClient):
                 self.msg(where, random.choice(self.huh_msgs))
             else:
                 if not context.replied:
-                    self.tell_yes(who, nick)
+                    self.tell_yes(where, context.nick)
             
         self.things.save()
                     
