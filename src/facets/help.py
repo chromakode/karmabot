@@ -16,7 +16,8 @@ class HelpFacet(thing.ThingFacet):
     def help(self, thing, context):
         help_lines = list()
         for facet in thing.facets.itervalues():
-            if facet.commands:
-                help_lines.extend("\"{0}\": {1}".format(cmd.format, cmd.help).replace("{thing}", thing.name) for cmd in facet.commands)
+            for cmdset in (facet.commands, facet.listens):
+                if cmdset:
+                    help_lines.extend("\"{0}\": {1}".format(cmd.format, cmd.help).replace("{thing}", thing.name) for cmd in cmdset if cmd.visible)
         
         context.reply("\n".join(help_lines))

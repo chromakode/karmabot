@@ -48,9 +48,9 @@ class CommandSet(object):
         self.children.append(cmdset)
         return cmdset
         
-    def add(self, format, help=None):
+    def add(self, format, help=None, visible=True):
         def doit(handler):
-            self.commands.append(Command(self, format, handler, help))
+            self.commands.append(Command(self, format, handler, help, visible))
             return handler
         
         return doit
@@ -77,11 +77,12 @@ class CommandSet(object):
 
 # TODO: stripping listen commands such as --/++
 class Command(object):
-    def __init__(self, parent, format, handler, help=None):
+    def __init__(self, parent, format, handler, help=None, visible=True):
         self.parent = parent
         self.format = format
         self.handler = handler
         self.help = help
+        self.visible = visible
     
     def to_regex(self):
         parameters = []
