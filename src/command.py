@@ -28,7 +28,7 @@ class CommandParser(object):
                     handled = True
                     
             else:
-                command.handler(context)
+                command.handler(context=context, **arguments)
 
         return handled
 
@@ -92,7 +92,7 @@ class Command(object):
                 parameter_regex = r"(?:\([#!?\w ]+\))|[#!?\w]+"
             else:
                 # This regex may come back to haunt me.
-                parameter_regex = r".+?"
+                parameter_regex = r".+"
             
             return r"(?P<{name}>{regex})".format(name=name, regex=parameter_regex)
         
