@@ -89,10 +89,9 @@ class Thing(object):
         self._data = data
         self._facets = dict()
         
-        facet_classes.attach(self, self.data.get("-facets", set()))
-        for facet_type in self.data.get("+facets", set()):
-            facet = facet_classes[facet_type](self)
-            self._add_facet(facet)
+        facet_classes.attach(self, set(self.data.get("-facets", [])))
+        for facet_type in set(self.data.get("+facets", [])):
+            self._load_facet(facet_type)
     
     @classmethod
     def create(self, thing_id, name, context):
@@ -115,9 +114,18 @@ class Thing(object):
     @property
     def facets(self):
         return self._facets
-        
+    
+    def _load_facet(self, facet_type):
+        facet = facet_classes[facet_type](self)
+        self.add_facet(facet)
+    
     def add_facet(self, facet):
         self.facets[facet.__class__.name] = facet
+        
+    def attach_persistent(self, facet_type):
+        if facet_type not in self.data.setdefault("+facets", []):
+            self.data["+facets"].append(facet_type)
+        self._load_facet(facet_type)
         
     def describe(self, context):
         return "\n".join(filter(None, (presenter(self, context) for presenter in presenters.iter_presenters(self))))

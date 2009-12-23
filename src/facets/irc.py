@@ -34,3 +34,27 @@ def present(thing, context):
     facet = thing.facets["ircchannel"]
     if facet.topic:
         return "Topic: {topic}".format(topic=facet.topic)
+        
+#TODO: IRCUser facet, with trusted/admin types and verified hostmasks
+
+@thing.facet_classes.register
+class IRCUserFacet(thing.ThingFacet):
+    name = "ircuser"
+    
+    @classmethod
+    def does_attach(cls, thing):
+        # Attached by the listener
+        return False
+
+    @property
+    def is_verified(self):
+        return self.data.get("verified", False)
+        
+    @is_verified.setter
+    def is_verified(self, value):
+        self.data["verified"] = value
+        
+@command.listen.add("{message}")
+def message(message, context):
+    user_thing = context.bot.things.get_thing(context.nick, context)
+    user_thing.attach_persistent("ircuser")
