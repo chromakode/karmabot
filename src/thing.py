@@ -134,9 +134,8 @@ class Thing(object):
 
     def describe(self, context):
         return "\n".join(filter(None,
-                                (presenter(self, context) \
-                                     for presenter \
-                                     in presenters.iter_presenters(self))))
+               (presenter(self, context) for presenter \
+                    in presenters.iter_presenters(self))))
 
 
 class ThingStore(object):
