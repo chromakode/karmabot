@@ -1,6 +1,5 @@
 import thing
 import command
-import ircutils
 
 @thing.facet_classes.register
 class KarmaFacet(thing.ThingFacet):
@@ -28,17 +27,7 @@ class KarmaFacet(thing.ThingFacet):
 @thing.presenters.register(set(["name", "karma"]))
 def present(thing, context):
     text = "{name}({karma})".format(
-        name  = ircutils.bold(thing.name),
+        name  = thing.describe(context, facets=set(["name"])),
         karma = thing.facets["karma"].karma
-    )
-    return text
-    
-    
-@thing.presenters.register(set(["name", "karma", "description"]))
-def present(thing, context):
-    text = "{name}({karma}): {descriptions}".format(
-        name         = ircutils.bold(thing.name),
-        karma        = thing.facets["karma"].karma,
-        descriptions = thing.facets["description"].present()
     )
     return text

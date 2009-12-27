@@ -1,7 +1,7 @@
 import thing
 import command
-import ircutils
 from twisted.python import log
+
 
 created_timestamp = thing.created_timestamp
 
@@ -45,7 +45,21 @@ class DescriptionFacet(thing.ThingFacet):
 
 @thing.presenters.register(set(["name", "description"]))
 def present(thing, context):
-    text = "{name}: {descriptions}".format(
-        name=ircutils.bold(thing.name),
-        descriptions=thing.facets["description"].present())
-    return text
+    if thing.facets["description"].descriptions:
+        text = "{name}: {descriptions}".format(
+            name         = thing.describe(context, facets=set(["name"])),
+            descriptions = thing.facets["description"].present())
+        return text
+    else:
+        return thing.describe(context, facets=set(["name"]))
+    
+@thing.presenters.register(set(["name", "karma", "description"]))
+def present(thing, context):
+    name_display = thing.describe(context, facets=set(["name", "karma"]))
+    if thing.facets["description"].descriptions:
+        text = "{name}: {descriptions}".format(
+            name         = name_display,
+            descriptions = thing.facets["description"].present())
+        return text
+    else:
+        return name_display

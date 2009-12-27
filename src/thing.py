@@ -71,10 +71,14 @@ class PresenterRegistry(list):
         self.sort(key=lambda ((fs, o), p): (-len(fs), o))
 
     def register(self, handled_facets, order=0):
-
         def doit(presenter):
             self._register(handled_facets, presenter, order)
         return doit
+    
+    def get(self, handled_facets):
+        for ((presenter_handled_facets, order), presenter) in self:
+            if handled_facets == presenter_handled_facets:
+                return presenter
 
     def iter_presenters(self, thing):
         # FIXME: This should be optimized
@@ -132,11 +136,14 @@ class Thing(object):
             self.data["+facets"].append(facet_type)
         self._load_facet(facet_type)
 
-    def describe(self, context):
-        return "\n".join(filter(None,
-                                (presenter(self, context) \
-                                     for presenter \
-                                     in presenters.iter_presenters(self))))
+    def describe(self, context, facets=None):
+        if facets:
+            return presenters.get(facets)(self, context)
+        else:
+            return "\n".join(filter(None,
+                                    (presenter(self, context) \
+                                         for presenter \
+                                         in presenters.iter_presenters(self))))
 
 
 class ThingStore(object):

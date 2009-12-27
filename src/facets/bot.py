@@ -1,7 +1,6 @@
 import karmabot
 import thing
 import command
-import ircutils
 
 @thing.facet_classes.register
 class KarmaBotFacet(thing.ThingFacet):
@@ -16,7 +15,7 @@ class KarmaBotFacet(thing.ThingFacet):
 @thing.presenters.register(set(["karmabot", "name", "karma", "description"]))
 def present(thing, context):
     text = "{name}[v{version}]({karma}): {descriptions} ({things} things)".format(
-        name         = ircutils.bold(thing.name),
+        name         = thing.describe(context, facets=set(["name"])),
         karma        = thing.facets["karma"].karma,
         descriptions = thing.facets["description"].present(),
         version      = karmabot.VERSION,
