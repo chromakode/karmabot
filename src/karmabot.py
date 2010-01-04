@@ -2,7 +2,7 @@ import sys
 import random
 
 from twisted.words.protocols import irc
-from twisted.internet import reactor, protocol, ssl
+from twisted.internet import reactor, protocol, task, ssl
 from twisted.python import log
 
 import thing
@@ -48,6 +48,9 @@ class KarmaBot(irc.IRCClient):
         self.things.load()
         self.thing_command_parser = command.thing.compile()
         self.listen_parser = command.listen.compile()
+        
+        self.save_timer = task.LoopingCall(self.save)
+        self.save_timer.start(60.0*5, now=False)
 
     def connectionLost(self, reason):
         log.msg("Disconnected")
@@ -64,8 +67,12 @@ class KarmaBot(irc.IRCClient):
             channel, key = channel.split(":")
         else:
             key = None
-        log.msg("Joining %s" % channel)
+        log.msg("Joining {0}".format(channel))
         self.join(channel, key)
+
+    def save(self):
+        log.msg("Saving data")
+        self.things.save()
 
     def topicUpdated(self, user, channel, newTopic):
         thing = self.things.get_thing(channel, Context(user, channel, self))
@@ -100,8 +107,6 @@ class KarmaBot(irc.IRCClient):
             else:
                 if not context.replied:
                     self.tell_yes(where, context.nick)
-
-        self.things.save()
 
     def tell_yes(self, who, nick):
         self.msg(who, "{yesmsg}, {nick}.".format(
