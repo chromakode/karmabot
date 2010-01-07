@@ -17,4 +17,4 @@ class NameFacet(thing.ThingFacet):
 
 @thing.presenters.register(set(["name"]), order=-10)
 def present(thing, context):
-    return "{name}:".format(name = ircutils.bold(thing.name))
+    return "{name}".format(name = ircutils.bold(thing.name))
