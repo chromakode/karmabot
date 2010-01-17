@@ -160,6 +160,9 @@ def main():
     parser.add_option("-t", "--trust",
                       action="append", dest="trusted", default=[],
                       help="trusted hostmasks")
+    parser.add_option("-f", "--facets",
+                      action="append", dest="facets", default=[],
+                      help="additional facets to load")
 
     (options, channels) = parser.parse_args()
 
@@ -173,6 +176,10 @@ def main():
 
     if not options.port:
         options.port = 6667 if not options.ssl else 9999
+    
+    # FIXME: this needs to be replaced with a real facet manager
+    for facet_path in options.facets:
+        execfile(facet_path)
 
     factory = KarmaBotFactory(options.filename, options.nick,
                               channels, options.trusted, options.password)
