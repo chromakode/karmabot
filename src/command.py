@@ -101,7 +101,7 @@ class Command(object):
         def sub_parameter(match):
             name = match.group(1)
             if name == "thing":
-                parameter_regex = r"(?:\([^)]+\))|[#!?\w]+"
+                parameter_regex = r"(?:\([^()]+\))|[#!?\w]+"
             else:
                 # This regex may come back to haunt me.
                 parameter_regex = r".+"
