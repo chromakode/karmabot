@@ -14,11 +14,13 @@ class KarmaFacet(thing.ThingFacet):
     def inc(self, thing, context):
         self.data.setdefault(context.who, 0)
         self.data[context.who] += 1
+        return thing.name
         
     @listens.add("{thing}--", help="subtract 1 from karma")
     def dec(self, thing, context):
         self.data.setdefault(context.who, 0)
         self.data[context.who] -= 1
+        return thing.name
         
     @property
     def karma(self):

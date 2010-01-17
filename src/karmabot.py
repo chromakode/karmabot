@@ -46,7 +46,7 @@ class KarmaBot(irc.IRCClient):
         irc.IRCClient.connectionMade(self)
         self.things = thing.ThingStore(self.factory.filename)
         self.things.load()
-        self.thing_command_parser = command.thing.compile()
+        self.command_parser = command.thing.compile()
         self.listen_parser = command.listen.compile()
         
         self.save_timer = task.LoopingCall(self.save)
@@ -93,16 +93,13 @@ class KarmaBot(irc.IRCClient):
         where = self.nickname if channel == self.nickname else channel
         context = Context(user, where, self)
 
-        self.listen_parser.handle_command(msg, context, self.things)
+        listen_handled, msg = self.listen_parser.handle_command(msg, context)
 
         # Addressed (either in channel or by private message)
         command = None
         if msg.startswith(self.nickname):
             command = msg[len(self.factory.nick):].lstrip(" ,:").rstrip()
-            if (self.thing_command_parser.handle_command(command,
-                                                         context,
-                                                         self.things)
-                == False):
+            if not self.command_parser.handle_command(command, context)[0]:
                 self.msg(where, random.choice(self.huh_msgs))
             else:
                 if not context.replied:

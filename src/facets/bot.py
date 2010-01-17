@@ -10,7 +10,7 @@ class KarmaBotFacet(thing.ThingFacet):
     def does_attach(cls, thing):
         return thing.name == "karmabot"
         
-    #TODO: add save/reload/quit commands
+    #TODO: add save/reload/quit commands, customizable messages and behavior
         
 @thing.presenters.register(set(["karmabot", "name", "karma", "description"]))
 def present(thing, context):

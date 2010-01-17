@@ -10,32 +10,34 @@ class CommandParser(object):
     def __init__(self, command_infos):
         self._command_infos = command_infos
 
-    def iter_parses(self, text):
+    def handle_command(self, text, context, handled=False):
         for command_info in self._command_infos:
             match = command_info["re"].search(text)
             if match:
-                yield command_info["command"], match.groupdict()
+                substitution = self.dispatch_command(command_info["command"], match.groupdict(), context)
+                handled = True
                 if command_info["exclusive"]:
-                    return
+                    break                
+                    
+                if substitution:
+                    # Start over with the new string
+                    newtext = text[:match.start()] + substitution + text[match.end():]
+                    return self.handle_command(newtext, context, True)                
 
-    def handle_command(self, text, context, thingstore):
-        handled = False
-        for command, arguments in self.iter_parses(text):
-            if "thing" in arguments:
-                thing_name = arguments["thing"].strip("()")
-                facet_name = command.parent.name
-                thing = thingstore.get_thing(thing_name, context,
-                                             with_facet=facet_name)
-                if thing:
-                    arguments["thing"] = thing
-                    command.handler(arguments["thing"].facets[facet_name],
-                                    context=context, **arguments)
-                    handled = True
-            else:
-                command.handler(context=context, **arguments)
-
-        return handled
-
+        return (handled, text)
+    
+    def dispatch_command(self, command, arguments, context):
+        if "thing" in arguments:
+            thing_name = arguments["thing"].strip("()")
+            facet_name = command.parent.name
+            thing = context.bot.things.get_thing(thing_name, context,
+                                                 with_facet=facet_name)
+            if thing:
+                arguments["thing"] = thing
+                return command.handler(arguments["thing"].facets[facet_name],
+                                       context=context, **arguments)
+        else:
+            return command.handler(context=context, **arguments)
 
 class CommandSet(object):
 
@@ -76,11 +78,9 @@ class CommandSet(object):
             regex = command.to_regex()
             formatted_regex = self.regex_format.format(regex)
 
-            command_info = {
-               "re": re.compile(formatted_regex),
-                "command": command,
-                "exclusive": self.exclusive,
-               }
+            command_info = {"re": re.compile(formatted_regex),
+                            "command": command,
+                            "exclusive": self.exclusive}
             command_infos.append(command_info)
 
         return CommandParser(command_infos)
@@ -114,5 +114,5 @@ class Command(object):
         regex = re.sub(r"{(\w+)}", sub_parameter, regex)
         return regex
 
-listen = CommandSet("listen", exclusive=True)
+listen = CommandSet("listen")
 thing = CommandSet("thing", regex_format="(^{0}$)")
