@@ -7,11 +7,16 @@ except ImportError:
     
 import thing
 import command
+from utils import Cache
 
 @thing.facet_classes.register
 class RedditorFacet(thing.ThingFacet):
     name = "redditor"
     commands = command.thing.add_child(command.FacetCommandSet(name))
+    
+    def __init__(self, thing_):
+        thing.ThingFacet.__init__(self, thing_)
+        self.get_info = Cache(self._get_info, expire_seconds=10*60)
     
     @classmethod
     def does_attach(cls, thing):
@@ -40,7 +45,7 @@ class RedditorFacet(thing.ThingFacet):
     def username(self, value):
         self.data["username"] = value
         
-    def get_info(self):
+    def _get_info(self):
         about_url = "http://www.reddit.com/user/{0}/about.json"
         about = urllib.urlopen(about_url.format(self.username))
         return json.load(about)["data"]
