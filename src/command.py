@@ -15,14 +15,15 @@ class CommandParser(object):
             match = command_info["re"].search(text)
             if match:
                 substitution = self.dispatch_command(command_info["command"], match.groupdict(), context)
-                handled = True
-                if command_info["exclusive"]:
-                    break                
+                handled = True             
                     
                 if substitution:
                     # Start over with the new string
                     newtext = text[:match.start()] + substitution + text[match.end():]
-                    return self.handle_command(newtext, context, True)                
+                    return self.handle_command(newtext, context, True)
+                
+                if command_info["exclusive"]:
+                    break                
 
         return (handled, text)
     
@@ -41,12 +42,10 @@ class CommandParser(object):
 
 class CommandSet(object):
 
-    def __init__(self, name, regex_format="{0}",
-                 parent=None, exclusive=False):
+    def __init__(self, name, regex_format="{0}", parent=None):
         self.name = name
         self.regex_format = regex_format
         self.parent = parent
-        self.exclusive = exclusive
         self.children = []
         self.commands = []
 
@@ -58,10 +57,10 @@ class CommandSet(object):
         self.children.append(cmdset)
         return cmdset
 
-    def add(self, format, help=None, visible=True):
+    def add(self, format, help=None, visible=True, exclusive=False):
 
         def doit(handler):
-            self.commands.append(Command(self, format, handler, help, visible))
+            self.commands.append(Command(self, format, handler, help, visible, exclusive))
             return handler
 
         return doit
@@ -78,23 +77,27 @@ class CommandSet(object):
             regex = command.to_regex()
             formatted_regex = self.regex_format.format(regex)
 
-            command_info = {"re": re.compile(formatted_regex),
-                            "command": command,
-                            "exclusive": self.exclusive}
+            command_info = {"re":        re.compile(formatted_regex),
+                            "command":   command,
+                            "exclusive": command.exclusive}
             command_infos.append(command_info)
-
+        
+        # Sort exclusive commands before non-exclusive ones
+        command_infos.sort(key=lambda c:c["exclusive"], reverse=True)
+        
         return CommandParser(command_infos)
 
 
 # TODO: stripping listen commands such as --/++
 class Command(object):
 
-    def __init__(self, parent, format, handler, help=None, visible=True):
+    def __init__(self, parent, format, handler, help=None, visible=True, exclusive=False):
         self.parent = parent
         self.format = format
         self.handler = handler
         self.help = help
         self.visible = visible
+        self.exclusive = exclusive
 
     def to_regex(self):
 

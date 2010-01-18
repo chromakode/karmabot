@@ -54,8 +54,8 @@ class KarmaBot(irc.IRCClient):
 
     def connectionLost(self, reason):
         log.msg("Disconnected")
-        irc.IRCClient.connectionLost(self, reason)
         self.things.save()
+        irc.IRCClient.connectionLost(self, reason)
 
     def signedOn(self):
         log.msg("Connected")

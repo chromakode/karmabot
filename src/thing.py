@@ -26,6 +26,14 @@ class ThingFacet(object):
     @property
     def data(self):
         return self.thing.data.setdefault(self.__class__.name, {})
+    
+    @data.deleter
+    def data(self):
+        del self.thing.data[self.__class__.name]
+    
+    @property
+    def has_data(self):
+        return self.__class__.name in self.thing.data
 
     @classmethod
     def attach(cls, thing):
