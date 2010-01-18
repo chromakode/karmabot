@@ -4,7 +4,7 @@ import command
 @thing.facet_classes.register
 class KarmaFacet(thing.ThingFacet):
     name = "karma"
-    listens = command.listen.create_child_set(name)
+    listens = command.listen.add_child(command.FacetCommandSet(name))
     
     @classmethod
     def does_attach(cls, thing):

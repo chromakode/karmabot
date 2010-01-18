@@ -4,6 +4,18 @@ import itertools
 # TODO: regular expressions in this module should be
 # replaced with something more robust and more efficient.
 
+def thing_command(func, facet_name=None):
+    def doit(thing, context, **arguments):
+        thing = context.bot.things.get_thing(thing, context, with_facet=facet_name)
+        arguments["thing"] = thing
+        if thing:
+            if facet_name:
+                return func(arguments["thing"].facets[facet_name], 
+                            context=context, **arguments)
+            else:
+                return func(context=context, **arguments)
+        
+    return doit
 
 class CommandParser(object):
 
@@ -28,17 +40,7 @@ class CommandParser(object):
         return (handled, text)
     
     def dispatch_command(self, command, arguments, context):
-        if "thing" in arguments:
-            thing_name = arguments["thing"].strip("()")
-            facet_name = command.parent.name
-            thing = context.bot.things.get_thing(thing_name, context,
-                                                 with_facet=facet_name)
-            if thing:
-                arguments["thing"] = thing
-                return command.handler(arguments["thing"].facets[facet_name],
-                                       context=context, **arguments)
-        else:
-            return command.handler(context=context, **arguments)
+        return command.handler(context=context, **arguments)
 
 class CommandSet(object):
 
@@ -52,13 +54,12 @@ class CommandSet(object):
     def __iter__(self):
         return iter(self.commands)
 
-    def create_child_set(self, name):
-        cmdset = CommandSet(name, self)
-        self.children.append(cmdset)
-        return cmdset
+    def add_child(self, command_set):
+        command_set.parent = self
+        self.children.append(command_set)
+        return command_set
 
     def add(self, format, help=None, visible=True, exclusive=False):
-
         def doit(handler):
             self.commands.append(Command(self, format, handler, help, visible, exclusive))
             return handler
@@ -87,6 +88,13 @@ class CommandSet(object):
         
         return CommandParser(command_infos)
 
+
+class FacetCommandSet(CommandSet):
+    def add(self, *args, **kwargs):
+        def doit(handler):
+            return CommandSet.add(self, *args, **kwargs)(thing_command(handler, self.name))
+        
+        return doit
 
 # TODO: stripping listen commands such as --/++
 class Command(object):

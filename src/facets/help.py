@@ -1,5 +1,6 @@
 import thing
 import command
+from itertools import chain
 
 def numbered(strs):
     return ("{0}. {1}".format(num+1, line) 
@@ -8,7 +9,7 @@ def numbered(strs):
 @thing.facet_classes.register
 class HelpFacet(thing.ThingFacet):
     name = "help"
-    commands = command.thing.create_child_set(name)
+    commands = command.thing.add_child(command.FacetCommandSet(name))
     
     short_template = "\"{0}\"" 
     full_template = short_template + ": {1}"
@@ -18,15 +19,12 @@ class HelpFacet(thing.ThingFacet):
         return True
     
     def get_topics(self, thing):
-        topics = dict()
-        for facet in thing.facets.itervalues():
-            for commandset in (facet.commands, facet.listens):
-                if commandset:
-                    for command in commandset:
-                        if command.visible:
-                            topic = command.format.replace("{thing}", thing.name)
-                            help  = command.help.replace("{thing}", thing.name) 
-                            topics[topic] = help
+        topics = dict()                    
+        for cmd in chain(command.thing, thing.iter_commands()):
+            if cmd.visible:
+                topic = cmd.format.replace("{thing}", thing.name)
+                help  = cmd.help.replace("{thing}", thing.name) 
+                topics[topic] = help
         return topics
     
     def format_help(self, thing, full=False):

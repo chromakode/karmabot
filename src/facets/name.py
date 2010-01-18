@@ -5,7 +5,7 @@ import ircutils
 @thing.facet_classes.register
 class NameFacet(thing.ThingFacet):
     name = "name"    
-    commands = command.thing.create_child_set(name)
+    commands = command.thing.add_child(command.FacetCommandSet(name))
     
     @classmethod
     def does_attach(cls, thing):

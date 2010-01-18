@@ -29,7 +29,8 @@ class ThingFacet(object):
     
     @data.deleter
     def data(self):
-        del self.thing.data[self.__class__.name]
+        if self.__class__.name in self.thing.data:
+            del self.thing.data[self.__class__.name]
     
     @property
     def has_data(self):
@@ -108,7 +109,7 @@ class Thing(object):
 
         facet_classes.attach(self, set(self.data.get("-facets", [])))
         for facet_type in set(self.data.get("+facets", [])):
-            self._load_facet(facet_type)
+            self.add_facet(facet_type)
 
     @classmethod
     def create(self, thing_id, name, context):
@@ -132,17 +133,45 @@ class Thing(object):
     def facets(self):
         return self._facets
 
-    def _load_facet(self, facet_type):
-        facet = facet_classes[facet_type](self)
-        self.add_facet(facet)
+    def _facet_type(self, facet):
+        if isinstance(facet, ThingFacet):
+            return facet.__class__.name
+        elif isinstance(facet, (str, unicode)):
+            return facet
+        elif isinstance(facet, type) and issubclass(facet, ThingFacet):
+            return facet.name
+        else:
+            raise TypeError
 
     def add_facet(self, facet):
-        self.facets[facet.__class__.name] = facet
+        facet_type = self._facet_type(facet)
+        if not isinstance(facet, ThingFacet):
+            facet = facet_classes[facet_type](self)
+        self.facets[facet_type] = facet
+        
+    def remove_facet(self, facet):
+        del self.facets[self._facet_type(facet)]
 
-    def attach_persistent(self, facet_type):
+    def attach_persistent(self, facet):
+        facet_type = self._facet_type(facet)
         if facet_type not in self.data.setdefault("+facets", []):
             self.data["+facets"].append(facet_type)
-        self._load_facet(facet_type)
+        self.add_facet(facet_type)
+        
+    def detach_persistent(self, facet):
+        facet_type = self._facet_type(facet)
+        try:
+            self.data.get("+facets", []).remove(facet_type)
+        except ValueError:
+            pass
+        self.remove_facet(facet_type)
+        
+    def iter_commands(self):
+        for facet in self.facets.itervalues():
+            for command_set in (facet.commands, facet.listens):
+                if command_set:
+                    for cmd in command_set:
+                        yield cmd
 
     def describe(self, context, facets=None):
         if facets:
@@ -191,7 +220,7 @@ class ThingStore(object):
             self.data["things"][thing_id] = thing.data
 
     def get_thing(self, name, context, with_facet=None):
-        name = name.strip()
+        name = name.strip("() ")
         thing_id = self._id_from_name(name)
 
         if thing_id in self.things:

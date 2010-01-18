@@ -9,7 +9,7 @@ created_timestamp = thing.created_timestamp
 @thing.facet_classes.register
 class DescriptionFacet(thing.ThingFacet):
     name = "description"
-    commands = command.thing.create_child_set(name)
+    commands = command.thing.add_child(command.FacetCommandSet(name))
 
     @classmethod
     def does_attach(cls, thing):
