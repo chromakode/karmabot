@@ -179,7 +179,7 @@ def main():
     
     # FIXME: this needs to be replaced with a real facet manager
     for facet_path in options.facets:
-        execfile(facet_path)
+        execfile(facet_path, globals())
 
     factory = KarmaBotFactory(options.filename, options.nick,
                               channels, options.trusted, options.password)
