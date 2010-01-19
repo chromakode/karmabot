@@ -13,7 +13,6 @@ class Cache:
         call_time = time.time()
         if args != self.last_args or kwargs != self.last_kwargs or \
            self.last_time is None or call_time > self.last_time + self.expire_seconds:
-            print "cache miss"
             self.last_result = self.func(*args, **kwargs)
             self.last_time = call_time
             self.last_args = args
