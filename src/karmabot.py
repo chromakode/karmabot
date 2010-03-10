@@ -44,6 +44,9 @@ class KarmaBot(irc.IRCClient):
         self.nickname = self.factory.nick
         self.password = self.factory.password
         irc.IRCClient.connectionMade(self)
+        self.init()
+        
+    def init(self):
         self.things = thing.ThingStore(self.factory.filename)
         self.things.load()
         self.command_parser = command.thing.compile()
