@@ -22,15 +22,15 @@ class RedditorFacet(thing.ThingFacet):
     def does_attach(cls, thing):
         return False
         
-    @commands.add("forget that {thing} is a redditor",
-                  help="unset {thing}'s reddit username",
+    @commands.add(u"forget that {thing} is a redditor",
+                  help=u"unset {thing}'s reddit username",
                   exclusive=True)
     def unset_redditor(self, thing, context):
         del self.data
         self.thing.detach_persistent(self)
         
-    @commands.add("{thing} has reddit username {username}",
-                  help="set {thing}'s reddit username to {username}")
+    @commands.add(u"{thing} has reddit username {username}",
+                  help=u"set {thing}'s reddit username to {username}")
     def set_redditor_username(self, thing, username, context):
         self.username = username
     
@@ -50,8 +50,8 @@ class RedditorFacet(thing.ThingFacet):
         about = urllib.urlopen(about_url.format(self.username))
         return json.load(about)["data"]
 
-@command.thing.add("{thing} is a redditor",
-                   help="link {thing}'s reddit account to their user",
+@command.thing.add(u"{thing} is a redditor",
+                   help=u"link {thing}'s reddit account to their user",
                    exclusive=True)
 @command.thing_command
 def set_redditor(thing, context):
@@ -61,7 +61,7 @@ def set_redditor(thing, context):
 def present(thing, context):
     redditor = thing.facets["redditor"]
     info = thing.facets["redditor"].get_info()
-    text = "http://reddit.com/user/{name} ({link_karma}/{comment_karma})".format(
+    text = u"http://reddit.com/user/{name} ({link_karma}/{comment_karma})".format(
         name          = info["name"],
         link_karma    = info["link_karma"],
         comment_karma = info["comment_karma"])

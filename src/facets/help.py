@@ -3,7 +3,7 @@ import command
 from itertools import chain
 
 def numbered(strs):
-    return ("{0}. {1}".format(num+1, line) 
+    return (u"{0}. {1}".format(num+1, line) 
             for num, line in enumerate(strs))
 
 @thing.facet_classes.register
@@ -11,8 +11,8 @@ class HelpFacet(thing.ThingFacet):
     name = "help"
     commands = command.thing.add_child(command.FacetCommandSet(name))
     
-    short_template = "\"{0}\"" 
-    full_template = short_template + ": {1}"
+    short_template = u"\"{0}\"" 
+    full_template = short_template + u": {1}"
     
     @classmethod
     def does_attach(cls, thing):
@@ -34,15 +34,15 @@ class HelpFacet(thing.ThingFacet):
         help_lines.sort()
         return help_lines
     
-    @commands.add("help {thing}", help="view command help for {thing}")
+    @commands.add(u"help {thing}", help=u"view command help for {thing}")
     def help(self, thing, context):
-        context.reply("Commands: " + ", ".join(self.format_help(thing)))
+        context.reply(u"Commands: " + u", ".join(self.format_help(thing)))
         
-    @commands.add("help {thing} {topic}", help="view help for {topic} on {thing}")
+    @commands.add(u"help {thing} {topic}", help=u"view help for {topic} on {thing}")
     def help_topic(self, thing, topic, context):
-        topic = topic.strip("\"")
+        topic = topic.strip(u"\"")
         topics = self.get_topics(thing)
         if topic in topics:
             context.reply(self.full_template.format(topic, topics[topic]))
         else:
-            context.reply("I know of no such help topic.")
+            context.reply(u"I know of no such help topic.")

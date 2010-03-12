@@ -36,9 +36,9 @@ class Context(object):
 
 
 class KarmaBot(irc.IRCClient):
-    affirmative_prefixes = ["Affirmative", "Alright", "Done",
-                            "K", "OK", "Okay", "Sure", "Yes"]
-    huh_msgs = ["Huh?", "What?"]
+    affirmative_prefixes = [u"Affirmative", u"Alright", u"Done",
+                            u"K", u"OK", u"Okay", u"Sure", u"Yes"]
+    huh_msgs = [u"Huh?", u"What?"]
 
     def connectionMade(self):
         self.nickname = self.factory.nick
@@ -109,7 +109,7 @@ class KarmaBot(irc.IRCClient):
                     self.tell_yes(where, context.nick)
 
     def tell_yes(self, who, nick):
-        self.msg(who, "{yesmsg}, {nick}.".format(
+        self.msg(who, u"{yesmsg}, {nick}.".format(
                 yesmsg=random.choice(self.affirmative_prefixes), nick=nick))
 
 

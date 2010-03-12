@@ -15,14 +15,14 @@ class DescriptionFacet(thing.ThingFacet):
     def does_attach(cls, thing):
         return True
 
-    @commands.add("{thing} is {description}",
-                  help="add a description to {thing}")
+    @commands.add(u"{thing} is {description}",
+                  help=u"add a description to {thing}")
     def describe(self, thing, description, context):
         self.descriptions.append({"created": created_timestamp(context),
                                   "text": description})
 
-    @commands.add("forget that {thing} is {description}",
-                  help="drop a {description} for {thing}")
+    @commands.add(u"forget that {thing} is {description}",
+                  help=u"drop a {description} for {thing}")
     def forget(self, thing, description, context):
         log.msg(self.descriptions)
         for desc in self.descriptions:
@@ -39,14 +39,14 @@ class DescriptionFacet(thing.ThingFacet):
         return self.data
 
     def present(self):
-        return ", ".join(desc["text"] for desc in self.descriptions) \
-            or "<no description>"
+        return u", ".join(desc["text"] for desc in self.descriptions) \
+            or u"<no description>"
 
 
 @thing.presenters.register(set(["name", "description"]))
 def present(thing, context):
     if thing.facets["description"].descriptions:
-        text = "{name}: {descriptions}".format(
+        text = u"{name}: {descriptions}".format(
             name         = thing.describe(context, facets=set(["name"])),
             descriptions = thing.facets["description"].present())
         return text
@@ -57,7 +57,7 @@ def present(thing, context):
 def present(thing, context):
     name_display = thing.describe(context, facets=set(["name", "karma"]))
     if thing.facets["description"].descriptions:
-        text = "{name}: {descriptions}".format(
+        text = u"{name}: {descriptions}".format(
             name         = name_display,
             descriptions = thing.facets["description"].present())
         return text

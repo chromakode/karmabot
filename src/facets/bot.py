@@ -14,7 +14,7 @@ class KarmaBotFacet(thing.ThingFacet):
         
 @thing.presenters.register(set(["karmabot", "name", "karma", "description"]))
 def present(thing, context):
-    text = "{name}[v{version}]({karma}): {descriptions} ({things} things)".format(
+    text = u"{name}[v{version}]({karma}): {descriptions} ({things} things)".format(
         name         = thing.describe(context, facets=set(["name"])),
         karma        = thing.facets["karma"].karma,
         descriptions = thing.facets["description"].present(),

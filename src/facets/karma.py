@@ -10,13 +10,13 @@ class KarmaFacet(thing.ThingFacet):
     def does_attach(cls, thing):
         return True
     
-    @listens.add("{thing}++", help="add 1 to karma")
+    @listens.add(u"{thing}++", help=u"add 1 to karma")
     def inc(self, thing, context):
         self.data.setdefault(context.who, 0)
         self.data[context.who] += 1
         return thing.name
         
-    @listens.add("{thing}--", help="subtract 1 from karma")
+    @listens.add(u"{thing}--", help=u"subtract 1 from karma")
     def dec(self, thing, context):
         self.data.setdefault(context.who, 0)
         self.data[context.who] -= 1
@@ -28,7 +28,7 @@ class KarmaFacet(thing.ThingFacet):
 
 @thing.presenters.register(set(["name", "karma"]))
 def present(thing, context):
-    text = "{name}({karma})".format(
+    text = u"{name}({karma})".format(
         name  = thing.describe(context, facets=set(["name"])),
         karma = thing.facets["karma"].karma
     )
