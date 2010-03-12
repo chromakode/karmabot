@@ -19,3 +19,6 @@ class Cache:
             self.last_kwargs = kwargs
             
         return self.last_result
+        
+    def reset(self):
+        self.last_time = None

@@ -43,7 +43,9 @@ class RedditorFacet(thing.ThingFacet):
         
     @username.setter
     def username(self, value):
-        self.data["username"] = value
+        if value != self.data["username"]:
+            self.data["username"] = value
+            self.get_info.reset()
         
     def _get_info(self):
         about_url = "http://www.reddit.com/user/{0}/about.json"
