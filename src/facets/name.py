@@ -11,7 +11,7 @@ class NameFacet(thing.ThingFacet):
     def does_attach(cls, thing):
         return True   
     
-    @commands.add(u"{thing}", help=u"show information about {thing}")
+    @commands.add(u"{thing}\?*", help=u"show information about {thing}")
     def describe(self, thing, context):
         context.reply(thing.describe(context))
 
