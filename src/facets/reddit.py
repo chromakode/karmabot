@@ -43,7 +43,7 @@ class RedditorFacet(thing.ThingFacet):
         
     @username.setter
     def username(self, value):
-        if value != self.data["username"]:
+        if "username" not in self.data or value != self.data["username"]:
             self.data["username"] = value
             self.get_info.reset()
         

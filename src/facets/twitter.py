@@ -22,7 +22,7 @@ class TwitterFacet(thing.ThingFacet):
     def does_attach(cls, thing):
         return False
         
-    @commands.add(u"forget that {thing} is a twitterer",
+    @commands.add(u"forget that {thing} is on twitter",
                   help=u"unset {thing}'s twitter username",
                   exclusive=True)
     def unset_twitterer(self, thing, context):
@@ -30,8 +30,7 @@ class TwitterFacet(thing.ThingFacet):
         self.thing.detach_persistent(self)
         
     @commands.add(u"{thing} has twitter username {username}",
-                  help=u"set {thing}'s twitter username to {username}",
-                  exclusive=True)
+                  help=u"set {thing}'s twitter username to {username}")
     def set_twitter_username(self, thing, username, context):
         self.username = username
     
@@ -44,26 +43,27 @@ class TwitterFacet(thing.ThingFacet):
         
     @username.setter
     def username(self, value):
-        if value != self.data["username"]:
+        if "username" not in self.data or value != self.data["username"]:
             self.data["username"] = value
             self.get_info.reset()
         
     def _get_info(self):
-        about_url = "http://api.twitter.com/1/statuses/user_timeline/{0}.json"
+        about_url = "http://api.twitter.com/1/statuses/user_timeline/{username}.json".format(
+            username = self.username)
         about = urllib.urlopen(about_url.format(self.username))
-        return json.load(about)["data"]
+        return json.load(about)
 
-@command.thing.add(u"{thing} is a twitterer",
+@command.thing.add(u"{thing} is on twitter",
                    help=u"link {thing}'s twitter account to their user",
                    exclusive=True)
 @command.thing_command
 def set_twitterer(thing, context):
-    thing.attach_persistent(twitterFacet)
+    thing.attach_persistent(TwitterFacet)
 
-@thing.presenters.register(set(["twitterer"]))
+@thing.presenters.register(set(["twitter"]))
 def present(thing, context):
-    twitter = thing.facets["twitterer"]
-    info = thing.facets["twitterer"].get_info()
+    twitter = thing.facets["twitter"]
+    info = thing.facets["twitter"].get_info()
     text = u"http://twitter.com/{name}: {current_status}".format(
         name          = info[0]["user"]["screen_name"],
         current_status= info[0]["text"])
