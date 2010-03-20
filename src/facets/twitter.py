@@ -52,6 +52,9 @@ class TwitterFacet(thing.ThingFacet):
         about_url = "http://api.twitter.com/1/statuses/user_timeline/{0}.json"
         about = urllib.urlopen(about_url.format(self.username))
         return json.load(about)
+        
+    def get_last_tweet(self):
+        return unescape_html(self.get_info()[0]["text"])
 
 @command.thing.add(u"{thing} is on twitter",
                    help=u"link {thing}'s twitter account to their user",
@@ -62,8 +65,19 @@ def set_twitterer(thing, context):
 
 @thing.presenters.register(set(["twitter"]))
 def present(thing, context):
-    info = thing.facets["twitter"].get_info()
-    text = u"@{name}: \"{current_status}\"".format(
-        name           = info[0]["user"]["screen_name"],
-        current_status = unescape_html(info[0]["text"]))
+    twitter = thing.facets["twitter"]
+    text = u"@{twitter_name}: \"{tweet}\"".format(
+        twitter_name = twitter.username,
+        tweet        = twitter.get_last_tweet())
+    return text
+    
+@thing.presenters.register(set(["name", "karma", "description", "twitter"]))
+def present(thing, context):
+    twitter = thing.facets["twitter"]
+    name_display = thing.describe(context, facets=set(["name", "karma"]))
+    text = u"{name} \"{tweet}\"{descriptions}".format(
+        name         = name_display,
+        tweet        = twitter.get_last_tweet(),
+        descriptions = ": " + thing.facets["description"].present() 
+                       if thing.facets["description"].descriptions else "")
     return text
