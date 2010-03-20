@@ -1,4 +1,5 @@
 import urllib
+from xml.sax.saxutils import unescape as unescape_html
 
 try:
     import json
@@ -48,8 +49,7 @@ class TwitterFacet(thing.ThingFacet):
             self.get_info.reset()
         
     def _get_info(self):
-        about_url = "http://api.twitter.com/1/statuses/user_timeline/{username}.json".format(
-            username = self.username)
+        about_url = "http://api.twitter.com/1/statuses/user_timeline/{0}.json"
         about = urllib.urlopen(about_url.format(self.username))
         return json.load(about)
 
@@ -65,6 +65,6 @@ def present(thing, context):
     twitter = thing.facets["twitter"]
     info = thing.facets["twitter"].get_info()
     text = u"@{name}: {current_status}".format(
-        name          = info[0]["user"]["screen_name"],
-        current_status= info[0]["text"])
+        name           = info[0]["user"]["screen_name"],
+        current_status = unescape_html(info[0]["text"]))
     return text
