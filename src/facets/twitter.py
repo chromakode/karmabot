@@ -62,7 +62,6 @@ def set_twitterer(thing, context):
 
 @thing.presenters.register(set(["twitter"]))
 def present(thing, context):
-    twitter = thing.facets["twitter"]
     info = thing.facets["twitter"].get_info()
     text = u"@{name}: \"{current_status}\"".format(
         name           = info[0]["user"]["screen_name"],

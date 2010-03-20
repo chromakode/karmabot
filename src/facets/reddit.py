@@ -61,7 +61,6 @@ def set_redditor(thing, context):
 
 @thing.presenters.register(set(["redditor"]))
 def present(thing, context):
-    redditor = thing.facets["redditor"]
     info = thing.facets["redditor"].get_info()
     text = u"http://reddit.com/user/{name} ({link_karma}/{comment_karma})".format(
         name          = info["name"],
