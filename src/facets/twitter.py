@@ -64,7 +64,7 @@ def set_twitterer(thing, context):
 def present(thing, context):
     twitter = thing.facets["twitter"]
     info = thing.facets["twitter"].get_info()
-    text = u"@{name}: {current_status}".format(
+    text = u"@{name}: \"{current_status}\"".format(
         name           = info[0]["user"]["screen_name"],
         current_status = unescape_html(info[0]["text"]))
     return text
