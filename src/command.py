@@ -78,7 +78,7 @@ class CommandSet(object):
             regex = command.to_regex()
             formatted_regex = self.regex_format.format(regex)
 
-            command_info = {"re":        re.compile(formatted_regex),
+            command_info = {"re":        re.compile(formatted_regex, re.U),
                             "command":   command,
                             "exclusive": command.exclusive}
             command_infos.append(command_info)
