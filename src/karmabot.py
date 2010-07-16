@@ -113,7 +113,7 @@ class KarmaBot(irc.IRCClient):
                 yesmsg=random.choice(self.affirmative_prefixes), nick=nick))
 
 
-class KarmaBotFactory(protocol.ClientFactory):
+class KarmaBotFactory(protocol.ReconnectingClientFactory):
     protocol = KarmaBot
 
     def __init__(self, filename, nick, channels, trusted, password=None):
@@ -123,10 +123,14 @@ class KarmaBotFactory(protocol.ClientFactory):
         self.trusted = trusted
         self.password = password
 
+    def buildProtocol(self, addr):
+        # Reset the ReconnectingClientFactory reconnect delay because we have
+        # reconnected then build our protocol.
+        self.resetDelay()
+        return protocol.ReconnectingClientFactory.buildProtocol(self, addr)
+
     def clientConnectionLost(self, connector, reason):
-        # FIXME: Infinite reconnects are bad
-        #connector.connect()
-        pass
+        protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
     def clientConnectionFailed(self, connector, reason):
         reactor.stop()
