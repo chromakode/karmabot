@@ -8,7 +8,6 @@ import command
 #TODO:
 #      Get rid of course command syntax? maybe?
 #      Add error handing to webpage fetching.
-#      Allow term specification.
 #      Search with different keys.
 
 @thing.facet_classes.register
@@ -21,11 +20,9 @@ class ScheduleFacet(thing.ThingFacet):
     last_retrieval_time = {}
     sched = {}
 
-    @commands.add(u"{thing} {string}", help=u"Get course information.")
-    def course1(self, thing, string, context):
-        term = "Fall"
-        year = "2010"
-        sched_key = term + year
+    @commands.add(u"{thing} {CSXXX} {TERM} {YEAR}", help=u"Get course information.")
+    def course1(self, thing, CSXXX, TERM, YEAR, context):
+        sched_key = TERM + YEAR
         def to_str(item):
             if item == None:
                 return ""
@@ -41,11 +38,11 @@ class ScheduleFacet(thing.ThingFacet):
                    to_str(course["Room"])
         cur_time = time.time()
         if cur_time - self.last_retrieval_time.get(sched_key, 0) > self.SECONDS_PER_HOUR:
-            self.sched[sched_key] = self.parse_table(self.get_table(self.retrieve_page(term, year)))
+            self.sched[sched_key] = self.parse_table(self.get_table(self.retrieve_page(TERM, YEAR)))
             self.last_retrieval_time[sched_key] = cur_time
         response = ""
         for course in self.sched[sched_key]:
-            if course["Course"] == string:
+            if course["Course"] == CSXXX:
                 response = response + format_course(course) + "\n"
         context.reply(response)
 
