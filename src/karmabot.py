@@ -2,7 +2,7 @@ import sys
 import random
 
 from twisted.words.protocols import irc
-from twisted.internet import reactor, protocol, ssl
+from twisted.internet import reactor, protocol, task, ssl
 from twisted.python import log
 
 import thing
@@ -36,23 +36,29 @@ class Context(object):
 
 
 class KarmaBot(irc.IRCClient):
-    affirmative_prefixes = ["Affirmative", "Alright", "Done",
-                            "K", "OK", "Okay", "Sure", "Yes"]
-    huh_msgs = ["Huh?", "What?"]
+    affirmative_prefixes = [u"Affirmative", u"Alright", u"Done",
+                            u"K", u"OK", u"Okay", u"Sure", u"Yes"]
+    huh_msgs = [u"Huh?", u"What?"]
 
     def connectionMade(self):
         self.nickname = self.factory.nick
         self.password = self.factory.password
         irc.IRCClient.connectionMade(self)
+        self.init()
+        
+    def init(self):
         self.things = thing.ThingStore(self.factory.filename)
         self.things.load()
-        self.thing_command_parser = command.thing.compile()
+        self.command_parser = command.thing.compile()
         self.listen_parser = command.listen.compile()
+        
+        self.save_timer = task.LoopingCall(self.save)
+        self.save_timer.start(60.0*5, now=False)
 
     def connectionLost(self, reason):
         log.msg("Disconnected")
-        irc.IRCClient.connectionLost(self, reason)
         self.things.save()
+        irc.IRCClient.connectionLost(self, reason)
 
     def signedOn(self):
         log.msg("Connected")
@@ -64,8 +70,12 @@ class KarmaBot(irc.IRCClient):
             channel, key = channel.split(":")
         else:
             key = None
-        log.msg("Joining %s" % channel)
+        log.msg("Joining {0}".format(channel))
         self.join(channel, key)
+
+    def save(self):
+        log.msg("Saving data")
+        self.things.save()
 
     def topicUpdated(self, user, channel, newTopic):
         thing = self.things.get_thing(channel, Context(user, channel, self))
@@ -86,29 +96,24 @@ class KarmaBot(irc.IRCClient):
         where = self.nickname if channel == self.nickname else channel
         context = Context(user, where, self)
 
-        self.listen_parser.handle_command(msg, context, self.things)
+        listen_handled, msg = self.listen_parser.handle_command(msg, context)
 
         # Addressed (either in channel or by private message)
         command = None
         if msg.startswith(self.nickname):
             command = msg[len(self.factory.nick):].lstrip(" ,:").rstrip()
-            if (self.thing_command_parser.handle_command(command,
-                                                         context,
-                                                         self.things)
-                == False):
+            if not self.command_parser.handle_command(command, context)[0]:
                 self.msg(where, random.choice(self.huh_msgs))
             else:
                 if not context.replied:
                     self.tell_yes(where, context.nick)
 
-        self.things.save()
-
     def tell_yes(self, who, nick):
-        self.msg(who, "{yesmsg}, {nick}.".format(
+        self.msg(who, u"{yesmsg}, {nick}.".format(
                 yesmsg=random.choice(self.affirmative_prefixes), nick=nick))
 
 
-class KarmaBotFactory(protocol.ClientFactory):
+class KarmaBotFactory(protocol.ReconnectingClientFactory):
     protocol = KarmaBot
 
     def __init__(self, filename, nick, channels, trusted, password=None):
@@ -118,10 +123,14 @@ class KarmaBotFactory(protocol.ClientFactory):
         self.trusted = trusted
         self.password = password
 
+    def buildProtocol(self, addr):
+        # Reset the ReconnectingClientFactory reconnect delay because we have
+        # reconnected then build our protocol.
+        self.resetDelay()
+        return protocol.ReconnectingClientFactory.buildProtocol(self, addr)
+
     def clientConnectionLost(self, connector, reason):
-        # FIXME: Infinite reconnects are bad
-        #connector.connect()
-        pass
+        protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
     def clientConnectionFailed(self, connector, reason):
         reactor.stop()
@@ -158,6 +167,9 @@ def main():
     parser.add_option("-t", "--trust",
                       action="append", dest="trusted", default=[],
                       help="trusted hostmasks")
+    parser.add_option("-f", "--facets",
+                      action="append", dest="facets", default=[],
+                      help="additional facets to load")
 
     (options, channels) = parser.parse_args()
 
@@ -171,6 +183,10 @@ def main():
 
     if not options.port:
         options.port = 6667 if not options.ssl else 9999
+    
+    # FIXME: this needs to be replaced with a real facet manager
+    for facet_path in options.facets:
+        execfile(facet_path, globals())
 
     factory = KarmaBotFactory(options.filename, options.nick,
                               channels, options.trusted, options.password)

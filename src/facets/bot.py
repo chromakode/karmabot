@@ -1,7 +1,6 @@
 import karmabot
 import thing
 import command
-import ircutils
 
 @thing.facet_classes.register
 class KarmaBotFacet(thing.ThingFacet):
@@ -11,12 +10,12 @@ class KarmaBotFacet(thing.ThingFacet):
     def does_attach(cls, thing):
         return thing.name == "karmabot"
         
-    #TODO: add save/reload/quit commands
+    #TODO: add save/reload/quit commands, customizable messages and behavior
         
 @thing.presenters.register(set(["karmabot", "name", "karma", "description"]))
 def present(thing, context):
-    text = "{name}[v{version}]({karma}): {descriptions} ({things} things)".format(
-        name         = ircutils.bold(thing.name),
+    text = u"{name}[v{version}]({karma}): {descriptions} ({things} things)".format(
+        name         = thing.describe(context, facets=set(["name"])),
         karma        = thing.facets["karma"].karma,
         descriptions = thing.facets["description"].present(),
         version      = karmabot.VERSION,
