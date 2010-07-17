@@ -6,7 +6,6 @@ import thing
 import command
 
 #TODO:
-#      Fix time bug.
 #      Get rid of course command syntax? maybe?
 #      Add error handing to webpage fetching.
 #      Allow term specification.
@@ -76,6 +75,8 @@ class ScheduleFacet(thing.ThingFacet):
                 return None
             elif item.small.string == None and item.small.a != None:
                 return item.small.a.string
+            elif len(item.contents) > 2 and item.contents[1] == u"-":
+                return u"-".join(map(lambda x: x.string, item.findAll("small")))
             else:
                 return item.small.string
         master_list = []
