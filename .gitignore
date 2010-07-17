@@ -1,2 +1,4 @@
 *~
 *.pyc
+.Python
+karmabot.egg-info/

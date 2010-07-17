@@ -5,8 +5,8 @@ try:
 except ImportError:
     import simplejson as json
     
-import thing
-import command
+from karmabot import thing
+from karmabot import command
 from utils import Cache
 
 @thing.facet_classes.register

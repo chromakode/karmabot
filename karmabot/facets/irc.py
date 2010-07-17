@@ -1,6 +1,6 @@
-import thing
-import command
-import ircutils
+from karmabot import thing
+from karmabot import command
+from karmabot import ircutils
 
 @thing.facet_classes.register
 class IRCChannelFacet(thing.ThingFacet):

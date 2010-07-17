@@ -1,5 +1,5 @@
-import thing
-import command
+from karmabot import thing
+from karmabot import command
 from twisted.python import log
 
 

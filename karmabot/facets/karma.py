@@ -1,5 +1,5 @@
-import thing
-import command
+from karmabot import thing
+from karmabot import command
 
 @thing.facet_classes.register
 class KarmaFacet(thing.ThingFacet):

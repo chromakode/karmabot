@@ -1,5 +1,5 @@
-import thing
-import command
+from karmabot import thing
+from  karmabot import command
 import random
 
 predictions = [ "As I see it, yes",

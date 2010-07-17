@@ -2,7 +2,8 @@ import sys
 import random
 
 from twisted.words.protocols import irc
-from twisted.internet import reactor, protocol, task, ssl
+from twisted.internet import reactor, task, ssl
+from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python import log
 
 import thing
@@ -45,15 +46,15 @@ class KarmaBot(irc.IRCClient):
         self.password = self.factory.password
         irc.IRCClient.connectionMade(self)
         self.init()
-        
+
     def init(self):
         self.things = thing.ThingStore(self.factory.filename)
         self.things.load()
         self.command_parser = command.thing.compile()
         self.listen_parser = command.listen.compile()
-        
+
         self.save_timer = task.LoopingCall(self.save)
-        self.save_timer.start(60.0*5, now=False)
+        self.save_timer.start(60.0 * 5, now=False)
 
     def connectionLost(self, reason):
         log.msg("Disconnected")
@@ -113,7 +114,7 @@ class KarmaBot(irc.IRCClient):
                 yesmsg=random.choice(self.affirmative_prefixes), nick=nick))
 
 
-class KarmaBotFactory(protocol.ReconnectingClientFactory):
+class KarmaBotFactory(ReconnectingClientFactory):
     protocol = KarmaBot
 
     def __init__(self, filename, nick, channels, trusted, password=None):
@@ -127,10 +128,10 @@ class KarmaBotFactory(protocol.ReconnectingClientFactory):
         # Reset the ReconnectingClientFactory reconnect delay because we have
         # reconnected then build our protocol.
         self.resetDelay()
-        return protocol.ReconnectingClientFactory.buildProtocol(self, addr)
+        return ReconnectingClientFactory.buildProtocol(self, addr)
 
     def clientConnectionLost(self, connector, reason):
-        protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+        ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
     def clientConnectionFailed(self, connector, reason):
         reactor.stop()
@@ -183,7 +184,7 @@ def main():
 
     if not options.port:
         options.port = 6667 if not options.ssl else 9999
-    
+
     # FIXME: this needs to be replaced with a real facet manager
     for facet_path in options.facets:
         execfile(facet_path, globals())
@@ -198,5 +199,4 @@ def main():
     reactor.run()
 
 if __name__ == "__main__":
-    from facets import bot, karma, description, name, help, irc as ircfacet
     main()

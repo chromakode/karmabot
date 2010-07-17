@@ -7,7 +7,7 @@ import time
 from twisted.python import log
 
 sys.path.append("../src")
-import karmabot
+import karmabot.client as karmabotb
 
 # Designed to parse bip logs (http://bip.t1r.net)
 LOG_RE = re.compile(r"(?P<when>[\d-]+\s*[\d:]+)\s*<\s*(?P<user>[^:]+): (?P<msg>.*)")

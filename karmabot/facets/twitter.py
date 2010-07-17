@@ -6,9 +6,9 @@ try:
 except ImportError:
     import simplejson as json
     
-import thing
-import command
-from utils import Cache
+from karmabot import thing
+from karmabot import command
+from karmabot.utils import Cache
 
 @thing.facet_classes.register
 class TwitterFacet(thing.ThingFacet):
