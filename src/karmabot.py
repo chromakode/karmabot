@@ -124,13 +124,10 @@ class KarmaBotFactory(protocol.ReconnectingClientFactory):
         self.password = password
 
     def buildProtocol(self, addr):
-        # Reset the ReconnectingClientFactory reconnect delay because we have
-        # reconnected then build our protocol.
+        # Reset the ReconnectingClientFactory reconnect delay because we don't
+        # want the next disconnect to force karmabot to delay forever.
         self.resetDelay()
         return protocol.ReconnectingClientFactory.buildProtocol(self, addr)
-
-    def clientConnectionLost(self, connector, reason):
-        protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
     def clientConnectionFailed(self, connector, reason):
         reactor.stop()
