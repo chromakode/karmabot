@@ -1,10 +1,17 @@
 import sys
-from karmabot.facets import bot, karma, description, name, help, irc as ircfacet
 
 from twisted.internet import reactor, ssl
 from twisted.python import log
 
-from karmabot.client import KarmaBotFactory
+from karmabot.core.client import KarmaBotFactory
+from karmabot.core.facets import (
+    bot,
+    description,
+    help,
+    irc as ircfacet,
+    karma,
+    name,
+)
 
 
 def main():

@@ -1,10 +1,12 @@
 import time
 
-
 try:
     import json
 except ImportError:
     import simplejson as json
+
+from .register import facet_registry, presenter_registry
+
 
 
 def created_timestamp(context):
@@ -26,12 +28,12 @@ class ThingFacet(object):
     @property
     def data(self):
         return self.thing.data.setdefault(self.__class__.name, {})
-    
+
     @data.deleter
     def data(self):
         if self.__class__.name in self.thing.data:
             del self.thing.data[self.__class__.name]
-    
+
     @property
     def has_data(self):
         return self.__class__.name in self.thing.data
@@ -54,52 +56,6 @@ class ThingFacet(object):
         raise NotImplementedError
 
 
-class FacetRegistry(dict):
-
-    def register(self, facet_class):
-        self[facet_class.name] = facet_class
-        return facet_class
-
-    def __iter__(self):
-        return self.itervalues()
-
-    def attach(self, thing, exclude=set()):
-        for facet_class in self:
-            if facet_class.name not in exclude:
-                facet_class.attach(thing)
-
-facet_classes = FacetRegistry()
-
-
-class PresenterRegistry(list):
-
-    def _register(self, handled_facets, presenter, order=0):
-        self.append(((set(handled_facets), order), presenter))
-
-        # Sort by number of facets first, then order
-        self.sort(key=lambda ((fs, o), p): (-len(fs), o))
-
-    def register(self, handled_facets, order=0):
-        def doit(presenter):
-            self._register(handled_facets, presenter, order)
-        return doit
-    
-    def get(self, handled_facets):
-        for ((presenter_handled_facets, order), presenter) in self:
-            if handled_facets == presenter_handled_facets:
-                return presenter
-
-    def iter_presenters(self, thing):
-        # FIXME: This should be optimized
-        facets = set(thing.facets.keys())
-        for ((handled_facets, order), presenter) in self:
-            if facets.issuperset(handled_facets):
-                facets.difference_update(handled_facets)
-                yield presenter
-
-presenters = PresenterRegistry()
-
-
 class Thing(object):
 
     def __init__(self, thing_id, data):
@@ -107,7 +63,7 @@ class Thing(object):
         self._data = data
         self._facets = dict()
 
-        facet_classes.attach(self, set(self.data.get("-facets", [])))
+        facet_registry.attach(self, set(self.data.get("-facets", [])))
         for facet_type in set(self.data.get("+facets", [])):
             self.add_facet(facet_type)
 
@@ -146,9 +102,9 @@ class Thing(object):
     def add_facet(self, facet):
         facet_type = self._facet_type(facet)
         if not isinstance(facet, ThingFacet):
-            facet = facet_classes[facet_type](self)
+            facet = facet_registry[facet_type](self)
         self.facets[facet_type] = facet
-        
+
     def remove_facet(self, facet):
         del self.facets[self._facet_type(facet)]
 
@@ -158,7 +114,7 @@ class Thing(object):
             self.data["+facets"].append(facet_type)
 
         self.add_facet(facet_type)
-        
+
     def detach_persistent(self, facet):
         facet_type = self._facet_type(facet)
         try:
@@ -166,7 +122,7 @@ class Thing(object):
         except ValueError:
             pass
         self.remove_facet(facet_type)
-        
+
     def iter_commands(self):
         for facet in self.facets.itervalues():
             for command_set in (facet.commands, facet.listens):
@@ -176,12 +132,12 @@ class Thing(object):
 
     def describe(self, context, facets=None):
         if facets:
-            return presenters.get(facets)(self, context)
+            return presenter_registry.get(facets)(self, context)
         else:
             return "\n".join(filter(None,
                                     (presenter(self, context) \
                                          for presenter \
-                                         in presenters.iter_presenters(self))))
+                                         in presenter_registry.iter_presenters(self))))
 
 
 class ThingStore(object):

@@ -1,29 +1,34 @@
-from karmabot import thing
-from karmabot import command
 from twisted.python import log
 
+from karmabot.core.client import thing
+from karmabot.core.commands.sets import CommandSet
+from karmabot.core.register import facet_registry, presenter_registry
+from karmabot.core.thing import (
+    created_timestamp,
+    ThingFacet,
+)
 
-created_timestamp = thing.created_timestamp
+created_timestamp = created_timestamp
 
 
-@thing.facet_classes.register
-class DescriptionFacet(thing.ThingFacet):
+@facet_registry.register
+class DescriptionFacet(ThingFacet):
     name = "description"
-    commands = command.thing.add_child(command.FacetCommandSet(name))
+    commands = thing.add_child(CommandSet(name))
 
     @classmethod
     def does_attach(cls, thing):
         return True
 
     @commands.add(u"{thing} is {description}",
-                  help=u"add a description to {thing}")
-    def describe(self, thing, description, context):
+                  u"add a description to {thing}")
+    def description(self, context, thing, description):
         self.descriptions.append({"created": created_timestamp(context),
                                   "text": description})
 
     @commands.add(u"forget that {thing} is {description}",
-                  help=u"drop a {description} for {thing}")
-    def forget(self, thing, description, context):
+                  u"drop a {description} for {thing}")
+    def forget(self, context, thing, description):
         log.msg(self.descriptions)
         for desc in self.descriptions:
             if desc["text"] == description:
@@ -43,23 +48,24 @@ class DescriptionFacet(thing.ThingFacet):
             or u"<no description>"
 
 
-@thing.presenters.register(set(["name", "description"]))
-def present(thing, context):
+@presenter_registry.register(set(["name", "description"]))
+def present_name(thing, context):
     if thing.facets["description"].descriptions:
         text = u"{name}: {descriptions}".format(
-            name         = thing.describe(context, facets=set(["name"])),
-            descriptions = thing.facets["description"].present())
+            name=thing.describe(context, facets=set(["name"])),
+            descriptions=thing.facets["description"].present())
         return text
     else:
         return thing.describe(context, facets=set(["name"]))
-    
-@thing.presenters.register(set(["name", "karma", "description"]))
-def present(thing, context):
+
+
+@presenter_registry.register(set(["name", "karma", "description"]))
+def present_karma(thing, context):
     name_display = thing.describe(context, facets=set(["name", "karma"]))
     if thing.facets["description"].descriptions:
         text = u"{name}: {descriptions}".format(
-            name         = name_display,
-            descriptions = thing.facets["description"].present())
+            name=name_display,
+            descriptions=thing.facets["description"].present())
         return text
     else:
         return name_display
