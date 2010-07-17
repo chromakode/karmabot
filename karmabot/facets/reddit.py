@@ -7,7 +7,7 @@ except ImportError:
     
 from karmabot import thing
 from karmabot import command
-from utils import Cache
+from karmabot.utils import Cache
 
 @thing.facet_classes.register
 class RedditorFacet(thing.ThingFacet):

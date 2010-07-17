@@ -7,7 +7,7 @@ import time
 from twisted.python import log
 
 sys.path.append("../src")
-import karmabot.client as karmabotb
+import karmabot.client as karmabot
 
 # Designed to parse bip logs (http://bip.t1r.net)
 LOG_RE = re.compile(r"(?P<when>[\d-]+\s*[\d:]+)\s*<\s*(?P<user>[^:]+): (?P<msg>.*)")
@@ -80,5 +80,5 @@ def main():
     bot.save()
 
 if __name__ == "__main__":
-    from facets import bot, karma, description, name, help, irc as ircfacet
+    from karmabot.facets import bot, karma, description, name, help, irc as ircfacet
     main()
