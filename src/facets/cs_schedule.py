@@ -25,7 +25,7 @@ class ScheduleFacet(thing.ThingFacet):
     def course1(self, thing, CSXXX, TERM, YEAR, context):
         sched_key = TERM + YEAR
         def to_str(item):
-            if item == None:
+            if item is None:
                 return ""
             else:
                 return item + " "
@@ -67,11 +67,11 @@ class ScheduleFacet(thing.ThingFacet):
     @classmethod
     def parse_table(cls, table):
         def find_content(item):
-            if item.small == None:
+            if item.small is None:
                 return None
-            elif item.small.string == None and item.small.a == None:
+            elif item.small.string is None and item.small.a is None:
                 return None
-            elif item.small.string == None and item.small.a != None:
+            elif item.small.string is None and item.small.a is not None:
                 return item.small.a.string
             elif len(item.contents) > 2 and item.contents[1] == u"-":
                 return u"-".join(map(lambda x: x.string, item.findAll("small")))
