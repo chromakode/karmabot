@@ -16,9 +16,10 @@ class ScheduleFacet(thing.ThingFacet):
     commands = command.thing.add_child(command.FacetCommandSet(name))
     URL = "http://cs.pdx.edu/schedule/termschedule?"
     SECONDS_PER_HOUR = 60 * 60
-    #TODO should probably go in __init__ but that didnt compile.
-    last_retrieval_time = {}
-    sched = {}
+
+    def on_attach(self):
+        self.last_retrieval_time = {}
+        self.sched = {}
 
     @commands.add(u"{thing} {CSXXX} {TERM} {YEAR}", help=u"Get course information.")
     def course1(self, thing, CSXXX, TERM, YEAR, context):
