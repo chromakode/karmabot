@@ -68,4 +68,4 @@ def present_karma(thing, context):
             descriptions=thing.facets["description"].present())
         return text
     else:
-        return name_display
+        return u"no descriptions found for {name}".format(name=name_display)

@@ -44,7 +44,7 @@ class HelpFacet(ThingFacet):
 
     @commands.add(u"help {thing} {topic}",
                   help_str=u"view help for {topic} on {thing}")
-    def help_topic(self, topic, context, thing):
+    def help_topic(self, context, thing, topic):
         topic = topic.strip(u"\"")
         topics = self.get_topics(thing)
         if topic in topics:
