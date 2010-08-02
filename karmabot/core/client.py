@@ -5,7 +5,6 @@ from twisted.internet import reactor, task
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python import log
 
-
 from .thing import ThingStore
 from .commands.sets import CommandSet
 
@@ -85,7 +84,7 @@ class KarmaBot(irc.IRCClient):
         thing = self.things.get_thing(channel, Context(user, channel, self))
         thing.facets["ircchannel"].topic = newTopic
 
-    def msg(self, user, message, length=None):
+    def msg(self, user, message, length=160):
         # Force conversion from unicode to utf-8
         if type(message) is unicode:
             message = message.encode("utf-8")
@@ -107,7 +106,7 @@ class KarmaBot(irc.IRCClient):
         if msg.startswith(self.nickname):
             command = msg[len(self.factory.nick):].lstrip(" ,:").rstrip()
             if not self.command_parser.handle_command(command, context)[0]:
-                self.msg(where, random.choice(self.huh_msgs))
+                self.msg(where, random.choice(self.huh_msgs), length=None)
             else:
                 if not context.replied:
                     self.tell_yes(where, context.nick)
@@ -128,8 +127,8 @@ class KarmaBotFactory(ReconnectingClientFactory):
         self.password = password
 
     def buildProtocol(self, addr):
-        # Reset the ReconnectingClientFactory reconnect delay because we have
-        # reconnected then build our protocol.
+        # Reset the ReconnectingClientFactory reconnect delay because we don't
+        # want the next disconnect to force karmabot to delay forever.
         self.resetDelay()
         return ReconnectingClientFactory.buildProtocol(self, addr)
 

@@ -1,7 +1,7 @@
 # dedicated to LC
 
 from json import JSONDecoder
-from urllib import unquote, urlencode
+from urllib import urlencode
 from urllib2 import urlopen
 
 from karmabot.core.client import thing
