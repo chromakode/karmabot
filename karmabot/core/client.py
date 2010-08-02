@@ -16,12 +16,12 @@ thing = CommandSet("thing", regex_format="(^{0}$)")
 
 class Context(object):
 
-    def __init__(self, user, where, bot, priv=False):
+    def __init__(self, user, where, bot, private=False):
         self.user = user
         self.where = where
         self.bot = bot
         self.replied = False
-        self.private = priv
+        self.private = private
 
     @property
     def nick(self):
@@ -35,7 +35,7 @@ class Context(object):
         if not where:
             where = self.where
 
-        self.bot.msg(where, msg)
+        self.bot.msg(where, msg, priv=self.private)
         self.replied = replied
 
 
@@ -85,13 +85,19 @@ class KarmaBot(irc.IRCClient):
         thing = self.things.get_thing(channel, Context(user, channel, self))
         thing.facets["ircchannel"].topic = newTopic
 
-    def msg(self, user, message, length=160):
-        # Force conversion from unicode to utf-8
+    def msg(self, channel, message, length=160, priv=False):
+        """
+        Repsonds with unicode only, complies with RFC 1459
+        http://irchelp.org/irchelp/rfc/rfc.html
+        """
         if type(message) is unicode:
             message = message.encode("utf-8")
-
+        if not priv:
+            message = message[:510]
+        log.msg('[{channel}] {message}'.format(channel=channel,
+                                              message=message))
         for line in message.split("\n"):
-            irc.IRCClient.msg(self, user, line, None)
+            irc.IRCClient.msg(self, channel, line, None)
 
     def privmsg(self, user, channel, msg):
         log.msg("[{channel}] {user}: {msg}".format(channel=channel,
@@ -99,15 +105,15 @@ class KarmaBot(irc.IRCClient):
         msg = msg.decode("utf-8")
 
         context = Context(user, channel, self)
-        context.priv = True if (channel == self.nickname and
-                                context.nick != self.nickname) else False
+        context.private = True if (channel == self.nickname and
+                                   context.nick != self.nickname) else False
 
         listen_handled, msg = self.listen_parser.handle_command(msg, context)
 
         # Addressed (either in channel or by private message)
         command = None
-        if msg.startswith(self.nickname) or context.priv:
-            if not context.priv:
+        if msg.startswith(self.nickname) or context.private:
+            if not context.private:
                 command = msg[len(self.factory.nick):].lstrip(" ,:").rstrip()
             else:
                 context.where = context.nick
