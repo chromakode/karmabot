@@ -16,11 +16,12 @@ thing = CommandSet("thing", regex_format="(^{0}$)")
 
 class Context(object):
 
-    def __init__(self, user, where, bot):
+    def __init__(self, user, where, bot, priv=False):
         self.user = user
         self.where = where
         self.bot = bot
         self.replied = False
+        self.private = priv
 
     @property
     def nick(self):
@@ -90,26 +91,32 @@ class KarmaBot(irc.IRCClient):
             message = message.encode("utf-8")
 
         for line in message.split("\n"):
-            irc.IRCClient.msg(self, user, line, length)
+            irc.IRCClient.msg(self, user, line, None)
 
     def privmsg(self, user, channel, msg):
         log.msg("[{channel}] {user}: {msg}".format(channel=channel,
                                                    user=user, msg=msg))
         msg = msg.decode("utf-8")
-        where = self.nickname if channel == self.nickname else channel
-        context = Context(user, where, self)
+
+        context = Context(user, channel, self)
+        context.priv = True if (channel == self.nickname and
+                                context.nick != self.nickname) else False
 
         listen_handled, msg = self.listen_parser.handle_command(msg, context)
 
         # Addressed (either in channel or by private message)
         command = None
-        if msg.startswith(self.nickname):
-            command = msg[len(self.factory.nick):].lstrip(" ,:").rstrip()
+        if msg.startswith(self.nickname) or context.priv:
+            if not context.priv:
+                command = msg[len(self.factory.nick):].lstrip(" ,:").rstrip()
+            else:
+                context.where = context.nick
+                command = msg.rstrip()
             if not self.command_parser.handle_command(command, context)[0]:
-                self.msg(where, random.choice(self.huh_msgs), length=None)
+                self.msg(channel, random.choice(self.huh_msgs))
             else:
                 if not context.replied:
-                    self.tell_yes(where, context.nick)
+                    self.tell_yes(channel, context.nick)
 
     def tell_yes(self, who, nick):
         self.msg(who, u"{yesmsg}, {nick}.".format(
