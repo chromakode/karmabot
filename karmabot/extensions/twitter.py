@@ -1,3 +1,8 @@
+# Copyright the Karmabot authors and contributors.
+# All rights reserved.  See AUTHORS.
+#
+# This file is part of 'karmabot' and is distributed under the BSD license.
+# See LICENSE for more details.
 import urllib
 from xml.sax.saxutils import unescape as unescape_html
 
@@ -6,9 +11,9 @@ try:
 except ImportError:
     import simplejson as json
     
-import thing
-import command
-from utils import Cache
+from karmabot import thing
+from karmabot import command
+from karmabot.utils import Cache
 
 @thing.facet_classes.register
 class TwitterFacet(thing.ThingFacet):

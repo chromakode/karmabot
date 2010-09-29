@@ -1,5 +1,10 @@
-import thing
-import command
+# Copyright the Karmabot authors and contributors.
+# All rights reserved.  See AUTHORS.
+#
+# This file is part of 'karmabot' and is distributed under the BSD license.
+# See LICENSE for more details.
+from karmabot import thing
+from  karmabot import command
 import random
 
 predictions = [ "As I see it, yes",

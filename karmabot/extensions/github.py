@@ -1,3 +1,8 @@
+# Copyright the Karmabot authors and contributors.
+# All rights reserved.  See AUTHORS.
+#
+# This file is part of 'karmabot' and is distributed under the BSD license.
+# See LICENSE for more details.
 import urllib
 
 try:
@@ -5,18 +10,19 @@ try:
 except ImportError:
     import simplejson as json
 
-import thing
-import command
-from utils import Cache
+from karmabot.client import thing
+from karmabot.thing import facet_classes, presenters, ThingFacet
+from karmabot import command
+from karmabot.utils import Cache
 
 
-@thing.facet_classes.register
-class GitHubFacet(thing.ThingFacet):
+@facet_classes.register
+class GitHubFacet(ThingFacet):
     name = "github"
     commands = command.thing.add_child(command.FacetCommandSet(name))
 
     def __init__(self, thing_):
-        thing.ThingFacet.__init__(self, thing_)
+        ThingFacet.__init__(self, thing_)
         self.get_info = Cache(self._get_info, expire_seconds=10 * 60)
 
     @classmethod
@@ -66,15 +72,15 @@ class GitHubFacet(thing.ThingFacet):
         context.reply("\n".join(lines))
 
 
-@command.thing.add(u"{thing} is on github",
-                   help=u"link {thing}'s github account to their user",
-                   exclusive=True)
+@thing.add(format=u"{thing} is on github",
+           help_str=u"link {thing}'s github account to their user",
+           exclusive=True)
 @command.thing_command
 def set_githubber(thing, context):
     thing.attach_persistent(GitHubFacet)
 
 
-@thing.presenters.register(set(["github"]))
+@presenters.register(set(["github"]))
 def present(thing, context):
     github = thing.facets["github"]
     text = u"http://github.com/{0}".format(github.username)
