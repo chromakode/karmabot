@@ -17,14 +17,10 @@ class ScheduleFacet(ThingFacet):
     name = "course"
     commands = thing.add_child(CommandSet(name))
     URL = "http://cs.pdx.edu/schedule/termschedule?"
-    SECONDS_PER_HOUR = 60 * 60
-
-    def on_attach(self):
-        self.last_retrieval_time = {}
-        self.sched = {}
 
     @commands.add(u"course {CSXXX} {TERM} {YEAR}", u"Get course information from CS website.")
     def course1(self, context, CSXXX, TERM, YEAR):
+        SECONDS_PER_HOUR = 60 * 60
         sched_key = TERM + YEAR
         def to_str(item):
             if item is None:
@@ -39,15 +35,20 @@ class ScheduleFacet(ThingFacet):
                    to_str(course["Time"]) +\
                    to_str(course["Bldg"]) +\
                    to_str(course["Room"])
+        if self.state is None:
+            self.state = {}
+        state = self.state.get("cs_sched_state", {"ret_times": {}, "schedules": {}})
+
         cur_time = time.time()
-        if cur_time - self.last_retrieval_time.get(sched_key, 0) > self.SECONDS_PER_HOUR:
-            self.sched[sched_key] = self.parse_table(self.get_table(self.retrieve_page(TERM, YEAR)))
-            self.last_retrieval_time[sched_key] = cur_time
+        if cur_time - state["ret_times"].get(sched_key, 0) > SECONDS_PER_HOUR:
+            state["schedules"][sched_key] = ScheduleFacet.parse_table(ScheduleFacet.get_table(ScheduleFacet.retrieve_page(TERM, YEAR)))
+            state["ret_times"][sched_key] = cur_time
         response = ""
-        for course in self.sched[sched_key]:
+        for course in state["schedules"][sched_key]:
             if course["Course"] == CSXXX:
                 response = response + format_course(course) + "\n"
         context.reply(response)
+        self.state["cs_sched_state"] = state
 
     @classmethod
     def does_attach(cls, thing):

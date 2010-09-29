@@ -20,6 +20,7 @@ class Command(object):
         self.help = help
         self.visible = visible
         self.exclusive = exclusive
+        self.state = None
 
     def to_regex(self):
 
