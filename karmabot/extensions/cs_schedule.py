@@ -2,18 +2,20 @@ import time
 import urllib
 from BeautifulSoup import BeautifulSoup
 
-import thing
-import command
+from karmabot.core.client import thing
+from karmabot.core.thing import ThingFacet
+from karmabot.core.register import facet_registry, presenter_registry
+from karmabot.core.commands.sets import CommandSet
 
 #TODO:
 #      Get rid of course command syntax? maybe?
 #      Add error handing to webpage fetching.
 #      Search with different keys.
 
-@thing.facet_classes.register
-class ScheduleFacet(thing.ThingFacet):
+@facet_registry.register
+class ScheduleFacet(ThingFacet):
     name = "course"
-    commands = command.thing.add_child(command.FacetCommandSet(name))
+    commands = thing.add_child(CommandSet(name))
     URL = "http://cs.pdx.edu/schedule/termschedule?"
     SECONDS_PER_HOUR = 60 * 60
 
@@ -21,8 +23,8 @@ class ScheduleFacet(thing.ThingFacet):
         self.last_retrieval_time = {}
         self.sched = {}
 
-    @commands.add(u"{thing} {CSXXX} {TERM} {YEAR}", help=u"Get course information.")
-    def course1(self, thing, CSXXX, TERM, YEAR, context):
+    @commands.add(u"course {CSXXX} {TERM} {YEAR}", u"Get course information from CS website.")
+    def course1(self, context, CSXXX, TERM, YEAR):
         sched_key = TERM + YEAR
         def to_str(item):
             if item is None:
