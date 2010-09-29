@@ -3,13 +3,10 @@
 #
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
-from karmabot.core.client import thing, listen
-from karmabot.core.commands.sets import CommandSet
+from karmabot.core.commands import CommandSet, listen, thing
 from karmabot.core.thing import ThingFacet
-from karmabot.core.register import facet_registry, presenter_registry
 
 
-@facet_registry.register
 class IRCChannelFacet(ThingFacet):
     name = "ircchannel"
     commands = thing.add_child(CommandSet(name))
@@ -44,14 +41,6 @@ class IRCChannelFacet(ThingFacet):
         self.data["topic"] = value
 
 
-@presenter_registry.register(set(["ircchannel"]))
-def present(thing, context):
-    facet = thing.facets["ircchannel"]
-    if facet.topic:
-        return u"Topic: {topic}".format(topic=facet.topic)
-
-
-@facet_registry.register
 class IRCUserFacet(ThingFacet):
     #TODO: IRCUser facet, with trusted/admin types and verified hostmasks
     name = "ircuser"

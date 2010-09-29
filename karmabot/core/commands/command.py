@@ -62,6 +62,8 @@ class CommandParser(object):
                     instance = foo['thing']._facets.get(handler_cls)
 
                 substitution = self.dispatch_command(command, instance, foo)
+
+
                 handled = True
                 if substitution:
                     # Start over with the new string
@@ -76,6 +78,10 @@ class CommandParser(object):
 
     def dispatch_command(self, command, instance, kw):
         if instance:
-            return command.handler(instance, **kw)
+            context = kw.get('context')
+            command.handler(instance, **kw)
+            if context:
+                context.bot.things.set_thing(instance.thing.thing_id,
+                                             instance.thing)
         else:
             return command.handler(command, **kw)

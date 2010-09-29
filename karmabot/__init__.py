@@ -15,5 +15,6 @@ from .core import (
     utils,
 )
 
+
 __all__ = ['client', 'commands', 'facets', 'ircutils',
            'thing', 'register', 'utils']

@@ -11,12 +11,7 @@ from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python import log
 
 from .thing import ThingStore
-from .commands.sets import CommandSet
-
-VERSION = "0.2"
-
-listen = CommandSet("listen")
-thing = CommandSet("thing", regex_format="(^{0}$)")
+from .commands import listen, thing
 
 
 class Context(object):
@@ -56,7 +51,8 @@ class KarmaBot(irc.IRCClient):
         self.init()
 
     def init(self):
-        self.things = ThingStore(self.factory.filename)
+
+        self.things = ThingStore()
         self.things.load()
         self.command_parser = thing.compile()
         self.listen_parser = listen.compile()

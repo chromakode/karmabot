@@ -3,6 +3,8 @@
 #
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
+
+
 class FacetRegistry(dict):
 
     def register(self, facet_class):

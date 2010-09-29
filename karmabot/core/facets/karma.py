@@ -3,13 +3,11 @@
 #
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
-from karmabot.core.client import listen, thing
+
 from karmabot.core.thing import ThingFacet
-from karmabot.core.commands.sets import CommandSet
-from karmabot.core.register import facet_registry, presenter_registry
+from karmabot.core.commands import CommandSet, listen
 
 
-@facet_registry.register
 class KarmaFacet(ThingFacet):
     name = "karma"
     listens = listen.add_child(CommandSet(name))
@@ -33,12 +31,3 @@ class KarmaFacet(ThingFacet):
     @property
     def karma(self):
         return sum(self.data.itervalues())
-
-
-@presenter_registry.register(set(["name", "karma"]))
-def present(thing, context):
-    text = u"{name}({karma})".format(
-        name=thing.describe(context, facets=set(["name"])),
-        karma=thing.facets["karma"].karma,
-    )
-    return text

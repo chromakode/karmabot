@@ -32,7 +32,7 @@ setup(
       zip_safe=False,
     platforms='any',
     license='BSD',
-    url='http://www.github.com/dcolish/cockerel',
+    url='http://www.github.com/dcolish/karmabot',
 
     classifiers=[
         'Development Status :: 4 - Beta ',
@@ -55,5 +55,6 @@ setup(
     install_requires=[
         'pyopenssl',
         'twisted',
+        'redis',
         ],
     )

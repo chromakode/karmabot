@@ -4,14 +4,10 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 import time
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import cPickle
+from redis import Redis
 
 from .register import facet_registry, presenter_registry
-
 
 
 def created_timestamp(context):
@@ -69,7 +65,7 @@ class Thing(object):
         self._facets = dict()
 
         facet_registry.attach(self, set(self.data.get("-facets", [])))
-        for facet_type in set(self.data.get("+facets", [])):
+        for facet_type in set(self.facets):
             self.add_facet(facet_type)
 
     @classmethod
@@ -145,31 +141,24 @@ class Thing(object):
                                          in presenter_registry.iter_presenters(self))))
 
 
-class ThingStore(object):
-    FORMAT = "2"
+class ThingStore(dict):
 
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self, host='localhost', port=6379, db=0):
+        self.host = host
+        self.port = port
+        self.db = db
         self.data = None
         self.things = None
 
     def load(self):
-        try:
-            self.data = json.load(open(self.filename))
-        except IOError:
-            self.data = {"things": dict(), "version": ThingStore.FORMAT}
-
-        self.things = dict()
-        for thing_id, thing_data in self.data["things"].iteritems():
-            self.things[thing_id] = Thing(thing_id, thing_data)
+        self.things = Redis(host=self.host, port=self.port, db=self.db)
 
     def save(self):
-        json.dump(self.data, open(self.filename, "w"),
-                  sort_keys=True, indent=4)
+        self.things.save()
 
     @property
     def count(self):
-        return len(self.things)
+        return self.things.dbsize()
 
     def _id_from_name(self, name):
         name = name.strip()
@@ -177,16 +166,16 @@ class ThingStore(object):
         return thing_id
 
     def add_thing(self, thing_id, thing):
-        if not thing_id in self.things:
-            self.things[thing_id] = thing
-            self.data["things"][thing_id] = thing.data
+        if not self.things.exists(thing_id):
+            self.things.set(thing_id, cPickle.dumps(thing,
+                                                    cPickle.HIGHEST_PROTOCOL))
 
     def get_thing(self, name, context, with_facet=None):
         name = name.strip("() ")
         thing_id = self._id_from_name(name)
 
-        if thing_id in self.things:
-            thing = self.things[thing_id]
+        if self.things.exists(thing_id):
+            thing = cPickle.loads(self.things.get(thing_id))
         else:
             thing = Thing.create(thing_id, name, context)
 
@@ -194,4 +183,8 @@ class ThingStore(object):
             return None
         else:
             self.add_thing(thing_id, thing)
-            return self.things[thing_id]
+            return cPickle.loads(self.things.get(thing_id))
+
+    def set_thing(self, thing_id, thing):
+        return self.things.set(thing_id, cPickle.dumps(thing,
+                                                       cPickle.HIGHEST_PROTOCOL))

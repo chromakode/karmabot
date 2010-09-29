@@ -5,9 +5,7 @@
 # See LICENSE for more details.
 from twisted.python import log
 
-from karmabot.core.client import thing
-from karmabot.core.commands.sets import CommandSet
-from karmabot.core.register import facet_registry, presenter_registry
+from karmabot.core.commands import CommandSet, thing
 from karmabot.core.thing import (
     created_timestamp,
     ThingFacet,
@@ -16,7 +14,6 @@ from karmabot.core.thing import (
 created_timestamp = created_timestamp
 
 
-@facet_registry.register
 class DescriptionFacet(ThingFacet):
     name = "description"
     commands = thing.add_child(CommandSet(name))
@@ -36,7 +33,7 @@ class DescriptionFacet(ThingFacet):
     def forget(self, context, thing, description):
         log.msg(self.descriptions)
         for desc in self.descriptions:
-            if desc["text"] == description:
+             if desc["text"] == description:
                 self.descriptions.remove(desc)
                 log.msg("removed %s" % desc)
 
@@ -51,26 +48,3 @@ class DescriptionFacet(ThingFacet):
     def present(self):
         return u", ".join(desc["text"] for desc in self.descriptions) \
             or u"<no description>"
-
-
-@presenter_registry.register(set(["name", "description"]))
-def present_name(thing, context):
-    if thing.facets["description"].descriptions:
-        text = u"{name}: {descriptions}".format(
-            name=thing.describe(context, facets=set(["name"])),
-            descriptions=thing.facets["description"].present())
-        return text
-    else:
-        return thing.describe(context, facets=set(["name"]))
-
-
-@presenter_registry.register(set(["name", "karma", "description"]))
-def present_karma(thing, context):
-    name_display = thing.describe(context, facets=set(["name", "karma"]))
-    if thing.facets["description"].descriptions:
-        text = u"{name}: {descriptions}".format(
-            name=name_display,
-            descriptions=thing.facets["description"].present())
-        return text
-    else:
-        return u"no descriptions found for {name}".format(name=name_display)
