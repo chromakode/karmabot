@@ -33,7 +33,7 @@ class DescriptionFacet(ThingFacet):
     def forget(self, context, thing, description):
         log.msg(self.descriptions)
         for desc in self.descriptions:
-             if desc["text"] == description:
+            if desc["text"] == description:
                 self.descriptions.remove(desc)
                 log.msg("removed %s" % desc)
 
