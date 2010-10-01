@@ -14,7 +14,7 @@ Links
 `````
 
 * `development version
-  <http://github.com/chromakode/karmabot/zipball/master#egg=Karmabot-dev>`_
+  <http://github.com/dcolish/karmabot/zipball/master#egg=Karmabot-dev>`_
 """
 
 from setuptools import setup, find_packages
@@ -56,5 +56,6 @@ setup(
         'pyopenssl',
         'twisted',
         'redis',
+        'BeautifulSoup',
         ],
     )
