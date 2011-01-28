@@ -61,10 +61,10 @@ class ScheduleFacet(ThingFacet):
         for course in sched_state["schedules"][sched_key]:
             if CSXXX in course["Course"]:
                 nothanks = [u'Notes', u'Sec', u'', u'-']
-                course_str = ' '.join(value
-                                      for key, value in course.iteritems()
-                                      if value not in nothanks
-                                      and key not in nothanks)
+                filt = lambda k, v: (True if k not in nothanks
+                                     and v not in nothanks else False)
+                course_str = ' '.join(v for k, v in course.iteritems()
+                                      if filt(k, v))
                 response = response + course_str + "\n"
 
         self.state.update({'cs_sched_state': sched_state})

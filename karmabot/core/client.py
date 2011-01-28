@@ -47,6 +47,7 @@ class KarmaBot(irc.IRCClient):
     def connectionMade(self):
         self.nickname = self.factory.nick
         self.password = self.factory.password
+        self.ignores = ['Global', self.nickname]
         irc.IRCClient.connectionMade(self)
         self.init()
 
@@ -104,19 +105,22 @@ class KarmaBot(irc.IRCClient):
         log.msg("[{channel}] {user}: {msg}".format(channel=channel,
                                                    user=user, msg=msg))
         msg = msg.decode("utf-8")
-
         context = Context(user, channel, self)
-        context.private = True if (channel == self.nickname and
-                                   context.nick != self.nickname) else False
+        if context.nick in self.ignores:
+            return
+        context.private = (channel == self.nickname and
+                           context.nick != self.nickname)
 
         listen_handled, msg = self.listen_parser.handle_command(msg, context)
 
         # Addressed (either in channel or by private message)
         command = None
+
         if msg.startswith(self.nickname) or context.private:
             if not context.private:
                 command = msg[len(self.factory.nick):].lstrip(" ,:").rstrip()
             else:
+                channel = context.nick
                 context.where = context.nick
                 command = msg.rstrip()
             if not self.command_parser.handle_command(command, context)[0]:
