@@ -35,7 +35,6 @@ class CommandSet(object):
         return decorator
 
     def compile(self):
-
         def traverse_commands(cmdset):
             child_commands = (child.commands for child in cmdset.children)
             for command in chain(cmdset.commands, *child_commands):

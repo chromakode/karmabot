@@ -87,6 +87,9 @@ class KarmaBot(irc.IRCClient):
         thing = self.things.get_thing(channel, Context(user, channel, self))
         thing.facets["ircchannel"].topic = newTopic
 
+    def error_msg(self, channel):
+        self.msg(channel, random.choice(self.huh_msgs))
+
     def msg(self, channel, message, length=160, priv=False):
         """
         Repsonds with unicode only, complies with RFC 1459
@@ -123,11 +126,12 @@ class KarmaBot(irc.IRCClient):
                 channel = context.nick
                 context.where = context.nick
                 command = msg.rstrip()
-            if not self.command_parser.handle_command(command, context)[0]:
-                self.msg(channel, random.choice(self.huh_msgs))
-            else:
-                if not context.replied:
-                    self.tell_yes(channel, context.nick)
+
+            handled, response = self.command_parser(command, context)
+            if not handled:
+                self.error_msg(channel)
+            elif not context.replied:
+                self.tell_yes(channel, context.nick)
 
     def tell_yes(self, who, nick):
         self.msg(who, u"{yesmsg}, {nick}.".format(

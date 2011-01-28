@@ -46,6 +46,9 @@ class CommandParser(object):
     def __init__(self, command_infos):
         self._command_infos = command_infos
 
+    def __call__(self, text, context, handled=False):
+        return self.handle_command(text, context, handled)
+
     def handle_command(self, text, context, handled=False):
         for command_info in self._command_infos:
             match = command_info["re"].search(text)
@@ -63,7 +66,6 @@ class CommandParser(object):
                     instance = foo['thing']._facets.get(handler_cls)
 
                 substitution = self.dispatch_command(command, instance, foo)
-
 
                 handled = True
                 if substitution:
