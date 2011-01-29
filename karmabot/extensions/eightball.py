@@ -3,8 +3,8 @@
 #
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
-from karmabot import thing
-from  karmabot import command
+from karmabot.core.facet import Facet
+from  karmabot import command, thing
 import random
 
 predictions = [ "As I see it, yes",
@@ -29,7 +29,7 @@ predictions = [ "As I see it, yes",
 		"Very doubtful"]
 
 @thing.facet_classes.register
-class EightBallFacet(thing.ThingFacet):
+class EightBallFacet(Facet):
     name = "eightball"    
     commands = command.thing.add_child(command.FacetCommandSet(name))
     

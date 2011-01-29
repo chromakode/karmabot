@@ -4,10 +4,10 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 
-from karmabot.core import thing
+from ..facet import Facet
 
 
-class KarmaBotFacet(thing.ThingFacet):
+class KarmaBotFacet(Facet):
     name = "karmabot"
 
     @classmethod

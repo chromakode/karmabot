@@ -8,13 +8,13 @@ from twisted.python import log
 from karmabot.core.commands import CommandSet, thing
 from karmabot.core.thing import (
     created_timestamp,
-    ThingFacet,
 )
+from ..facet import Facet
 
 created_timestamp = created_timestamp
 
 
-class DescriptionFacet(ThingFacet):
+class DescriptionFacet(Facet):
     name = "description"
     commands = thing.add_child(CommandSet(name))
 

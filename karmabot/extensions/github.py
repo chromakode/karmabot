@@ -10,19 +10,20 @@ try:
 except ImportError:
     import simplejson as json
 
-from karmabot.client import thing
-from karmabot.thing import facet_classes, presenters, ThingFacet
+from karmabot import thing
+from karmabot.core.register import facet_registry, presenter_registry
+from karmabot.core.facet import Facet
 from karmabot import command
 from karmabot.utils import Cache
 
 
-@facet_classes.register
-class GitHubFacet(ThingFacet):
+@facet_registry.register
+class GitHubFacet(Facet):
     name = "github"
     commands = command.thing.add_child(command.FacetCommandSet(name))
 
-    def __init__(self, thing_):
-        ThingFacet.__init__(self, thing_)
+    def __init__(self, thing):
+        super(self, Facet).__init__(self, thing)
         self.get_info = Cache(self._get_info, expire_seconds=10 * 60)
 
     @classmethod
@@ -80,7 +81,7 @@ def set_githubber(thing, context):
     thing.add_facet(GitHubFacet)
 
 
-@presenters.register(set(["github"]))
+@presenter_registry.register(set(["github"]))
 def present(thing, context):
     github = thing.facets["github"]
     text = u"http://github.com/{0}".format(github.username)

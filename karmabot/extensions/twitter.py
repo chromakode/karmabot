@@ -11,17 +11,17 @@ try:
 except ImportError:
     import simplejson as json
     
-from karmabot import thing
-from karmabot import command
+from karmabot import command, thing
+from karmabot.core.facet import Facet
 from karmabot.utils import Cache
 
 @thing.facet_classes.register
-class TwitterFacet(thing.ThingFacet):
+class TwitterFacet(Facet):
     name = "twitter"
     commands = command.thing.add_child(command.FacetCommandSet(name))
     
     def __init__(self, thing_):
-        thing.ThingFacet.__init__(self, thing_)
+        super(self, Facet).__init__(self, thing_)
         self.get_info = Cache(self._get_info, expire_seconds=10*60)
     
     @classmethod

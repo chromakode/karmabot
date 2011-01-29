@@ -4,7 +4,7 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 
-from karmabot.core.thing import ThingFacet
+from ..facet import Facet
 from karmabot.core.commands import CommandSet, thing
 from itertools import chain
 
@@ -14,7 +14,7 @@ def numbered(strs):
             for num, line in enumerate(strs))
 
 
-class HelpFacet(ThingFacet):
+class HelpFacet(Facet):
     name = "help"
     commands = thing.add_child(CommandSet(name))
     short_template = u"\"{0}\""

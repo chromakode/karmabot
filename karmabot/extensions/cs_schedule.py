@@ -11,7 +11,7 @@ from urllib2 import urlopen
 from BeautifulSoup import BeautifulSoup
 
 from karmabot.core.client import thing
-from karmabot.core.thing import ThingFacet
+from karmabot.core.facet import Facet
 from karmabot.core.register import facet_registry
 from karmabot.core.commands.sets import CommandSet
 
@@ -22,7 +22,7 @@ from karmabot.core.commands.sets import CommandSet
 
 
 @facet_registry.register
-class ScheduleFacet(ThingFacet):
+class ScheduleFacet(Facet):
     """
     Class which implements the ThingFacet interface and provides the new
     karmabot course info reporting functionality.

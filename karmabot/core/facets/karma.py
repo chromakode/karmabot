@@ -4,11 +4,11 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 
-from karmabot.core.thing import ThingFacet
+from ..facet import Facet
 from karmabot.core.commands import CommandSet, listen
 
 
-class KarmaFacet(ThingFacet):
+class KarmaFacet(Facet):
     name = "karma"
     listens = listen.add_child(CommandSet(name))
 

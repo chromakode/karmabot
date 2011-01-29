@@ -4,10 +4,10 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 from karmabot.core.commands import CommandSet, listen, thing
-from karmabot.core.thing import ThingFacet
+from ..facet import Facet
 
 
-class IRCChannelFacet(ThingFacet):
+class IRCChannelFacet(Facet):
     name = "ircchannel"
     commands = thing.add_child(CommandSet(name))
 
@@ -41,7 +41,7 @@ class IRCChannelFacet(ThingFacet):
         self.data["topic"] = value
 
 
-class IRCUserFacet(ThingFacet):
+class IRCUserFacet(Facet):
     #TODO: IRCUser facet, with trusted/admin types and verified hostmasks
     name = "ircuser"
 

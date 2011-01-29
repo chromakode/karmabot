@@ -6,8 +6,3 @@
 #
 
 VERSION = "0.3"
-
-from .facet_manager import FacetManager
-
-facets = FacetManager()
-facets.load_core()

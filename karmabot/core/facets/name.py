@@ -5,10 +5,10 @@
 # See LICENSE for more details.
 
 from karmabot.core.commands import CommandSet, thing
-from karmabot.core.thing import ThingFacet
+from ..facet import Facet
 
 
-class NameFacet(ThingFacet):
+class NameFacet(Facet):
     name = "name"
     commands = thing.add_child(CommandSet(name))
 
