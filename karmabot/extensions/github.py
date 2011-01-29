@@ -34,7 +34,7 @@ class GitHubFacet(ThingFacet):
                   exclusive=True)
     def unset_github_username(self, thing, context):
         del self.data
-        self.thing.detach_persistent(self)
+        self.thing.remove_facet(self)
 
     @commands.add(u"{thing} has github username {username}",
                   help=u"set {thing}'s github username to {username}")
@@ -77,7 +77,7 @@ class GitHubFacet(ThingFacet):
            exclusive=True)
 @command.thing_command
 def set_githubber(thing, context):
-    thing.attach_persistent(GitHubFacet)
+    thing.add_facet(GitHubFacet)
 
 
 @presenters.register(set(["github"]))

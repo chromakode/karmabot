@@ -44,13 +44,13 @@ class Command(object):
 class CommandParser(object):
 
     def __init__(self, command_infos):
-        self._command_infos = command_infos
+        self.command_infos = command_infos
 
     def __call__(self, text, context, handled=False):
         return self.handle_command(text, context, handled)
 
     def handle_command(self, text, context, handled=False):
-        for command_info in self._command_infos:
+        for command_info in self.command_infos:
             match = command_info["re"].search(text)
             if match:
                 instance = None
@@ -63,7 +63,7 @@ class CommandParser(object):
                     foo.update({'thing': context.bot.things.get_thing(thing,
                                                                      context)})
                     handler_cls = command.handler.__module__.split('.').pop()
-                    instance = foo['thing']._facets.get(handler_cls)
+                    instance = foo['thing'].facets.get(handler_cls)
 
                 substitution = self.dispatch_command(command, instance, foo)
 

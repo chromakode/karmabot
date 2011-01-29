@@ -33,7 +33,7 @@ class RedditorFacet(thing.ThingFacet):
                   exclusive=True)
     def unset_redditor(self, thing, context):
         del self.data
-        self.thing.detach_persistent(self)
+        self.thing.remove_facet(self)
 
     @commands.add(u"{thing} has reddit username {username}",
                   help=u"set {thing}'s reddit username to {username}")
@@ -64,7 +64,7 @@ class RedditorFacet(thing.ThingFacet):
                    exclusive=True)
 @command.thing_command
 def set_redditor(thing, context):
-    thing.attach_persistent(RedditorFacet)
+    thing.add_facet(RedditorFacet)
 
 
 @thing.presenters.register(set(["redditor"]))

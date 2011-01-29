@@ -33,7 +33,7 @@ class TwitterFacet(thing.ThingFacet):
                   exclusive=True)
     def unset_twitterer(self, thing, context):
         del self.data
-        self.thing.detach_persistent(self)
+        self.thing.remove_facet(self)
         
     @commands.add(u"{thing} has twitter username {username}",
                   help=u"set {thing}'s twitter username to {username}")
@@ -66,7 +66,7 @@ class TwitterFacet(thing.ThingFacet):
                    exclusive=True)
 @command.thing_command
 def set_twitterer(thing, context):
-    thing.attach_persistent(TwitterFacet)
+    thing.add_facet(TwitterFacet)
 
 @thing.presenters.register(set(["twitter"]))
 def present(thing, context):

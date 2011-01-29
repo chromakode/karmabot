@@ -25,18 +25,21 @@ class ThingFacet(object):
             thing.add_facet(self)
             self.on_attach()
 
+    def __str__(self):
+        return self.name
+
     @property
     def data(self):
-        return self.thing.data.setdefault(self.__class__.name, {})
+        return self.thing.data.setdefault(self.name, {})
 
     @data.deleter
     def data(self):
-        if self.__class__.name in self.thing.data:
-            del self.thing.data[self.__class__.name]
+        if self.name in self.thing.data:
+            del self.thing.data[self.name]
 
     @property
     def has_data(self):
-        return self.__class__.name in self.thing.data
+        return self.name in self.thing.data
 
     @classmethod
     def does_attach(cls, thing):
@@ -51,66 +54,26 @@ class ThingFacet(object):
 
 class Thing(object):
 
-    def __init__(self, thing_id, data):
-        self._thing_id = thing_id
-        self.data = data
-        self._facets = dict()
+    def __init__(self, thing_id, name, context):
+        self.thing_id = thing_id
+        self.name = name
+        self.data = {"name": name, "created": created_timestamp(context),
+                     "+facets": []}
+        self.facets = dict()
 
         facet_registry.attach(self, set(self.data.get("-facets", [])))
         for facet_type in set(self.facets):
             self.add_facet(facet_type)
 
-    @classmethod
-    def create(self, thing_id, name, context):
-        data = {"name": name, "created": created_timestamp(context)}
-        thing = Thing(thing_id, data)
-        return thing
-
-    @property
-    def thing_id(self):
-        return self._thing_id
-
-    @property
-    def name(self):
-        return self.data["name"]
-
-    @property
-    def facets(self):
-        return self._facets
-
-    def _facet_type(self, facet):
-        if isinstance(facet, ThingFacet):
-            return facet.__class__.name
-        elif isinstance(facet, (str, unicode)):
-            return facet
-        elif isinstance(facet, type) and issubclass(facet, ThingFacet):
-            return facet.name
-        else:
-            raise TypeError
-
     def add_facet(self, facet):
-        facet_type = self._facet_type(facet)
+        if str(facet) in self.facets:
+            return
         if not isinstance(facet, ThingFacet):
-            facet = facet_registry[facet_type](self)
-        self.facets[facet_type] = facet
+            facet = facet_registry[facet](self)
+        self.facets[facet] = facet
 
     def remove_facet(self, facet):
-        del self.facets[self._facet_type(facet)]
-
-    def attach_persistent(self, facet):
-        facet_type = self._facet_type(facet)
-        if facet_type not in self.data.setdefault("+facets", []):
-            self.data["+facets"].append(facet_type)
-
-        self.add_facet(facet_type)
-
-    def detach_persistent(self, facet):
-        facet_type = self._facet_type(facet)
-        try:
-            self.data.get("+facets", []).remove(facet_type)
-        except ValueError:
-            pass
-        self.remove_facet(facet_type)
+        del self.facets[str(facet)]
 
     def iter_commands(self):
         for facet in self.facets.itervalues():
@@ -150,8 +113,7 @@ class ThingStore(dict):
 
     def _id_from_name(self, name):
         name = name.strip()
-        thing_id = name.lower()
-        return thing_id
+        return name.lower()
 
     def add_thing(self, thing_id, thing):
         if not self.redis.exists(thing_id):
@@ -165,7 +127,7 @@ class ThingStore(dict):
         if self.redis.exists(thing_id):
             thing = cPickle.loads(self.redis.get(thing_id))
         else:
-            thing = Thing.create(thing_id, name, context)
+            thing = Thing(thing_id, name, context)
 
         if with_facet is not None and not with_facet in thing.facets:
             return None

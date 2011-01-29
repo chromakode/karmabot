@@ -59,7 +59,7 @@ class IRCUserFacet(ThingFacet):
         self.data["verified"] = value
 
     @listen.add("u{message}",
-                u'FOO')
+                u'manage messages coming in')
     def message(self, context, **arg):
         user_thing = context.bot.things.get_thing(context.nick, context)
-        user_thing.attach_persistent("ircuser")
+        user_thing.add_facet("ircuser")
