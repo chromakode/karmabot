@@ -7,12 +7,9 @@ import time
 import cPickle
 from redis import Redis
 
-from .facet import Facet
+from .facets import Facet
 from .register import facet_registry, presenter_registry
-
-
-def created_timestamp(context):
-    return {"who": context.who, "when": time.time(), "where": context.where}
+from .utils import created_timestamp
 
 
 class Thing(object):

@@ -11,7 +11,7 @@ from urllib2 import urlopen
 from BeautifulSoup import BeautifulSoup
 
 from karmabot.core.client import thing
-from karmabot.core.facet import Facet
+from karmabot.core.facets import Facet
 from karmabot.core.register import facet_registry
 from karmabot.core.commands.sets import CommandSet
 

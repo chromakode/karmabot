@@ -13,7 +13,8 @@ except ImportError:
 from karmabot import thing
 from karmabot import command
 from karmabot.utils import Cache
-from karmabot.core.facet import Facet
+from karmabot.core.facets import Facet
+
 
 @thing.facet_classes.register
 class RedditorFacet(Facet):

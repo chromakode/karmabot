@@ -23,7 +23,6 @@ class Command(object):
         self.state = None
 
     def to_regex(self):
-
         def sub_parameter(match):
             name = match.group(1)
             if name == "thing":

@@ -12,7 +12,7 @@ from twisted.python import log
 
 from .thing import ThingStore
 from .commands import listen, thing
-from .facet_manager import FacetManager
+from .facets import FacetManager
 
 
 class Context(object):

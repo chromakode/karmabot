@@ -12,7 +12,7 @@ except ImportError:
 
 from karmabot import thing
 from karmabot.core.register import facet_registry, presenter_registry
-from karmabot.core.facet import Facet
+from karmabot.core.facets import Facet
 from karmabot import command
 from karmabot.utils import Cache
 

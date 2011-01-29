@@ -12,7 +12,7 @@ except ImportError:
     import simplejson as json
     
 from karmabot import command, thing
-from karmabot.core.facet import Facet
+from karmabot.core.facets import Facet
 from karmabot.utils import Cache
 
 @thing.facet_classes.register

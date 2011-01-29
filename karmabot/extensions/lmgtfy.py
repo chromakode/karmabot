@@ -12,7 +12,7 @@ from urllib2 import urlopen
 from karmabot.core.client import thing
 from karmabot.core.commands.sets import CommandSet
 from karmabot.core.register import facet_registry
-from karmabot.core.facet import Facet
+from karmabot.core.facets import Facet
 
 import re
 import htmlentitydefs

@@ -3,8 +3,9 @@
 #
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
+
 from karmabot.core.commands import CommandSet, listen, thing
-from ..facet import Facet
+from .base import Facet
 
 
 class IRCChannelFacet(Facet):

@@ -4,7 +4,7 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 
-from ..facet import Facet
+from .base import Facet
 
 
 class KarmaBotFacet(Facet):

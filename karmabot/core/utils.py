@@ -27,3 +27,7 @@ class Cache:
 
     def reset(self):
         self.last_time = None
+
+
+def created_timestamp(context):
+    return {"who": context.who, "when": time.time(), "where": context.where}

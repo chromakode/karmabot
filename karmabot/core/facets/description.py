@@ -5,13 +5,9 @@
 # See LICENSE for more details.
 from twisted.python import log
 
-from karmabot.core.commands import CommandSet, thing
-from karmabot.core.thing import (
-    created_timestamp,
-)
-from ..facet import Facet
-
-created_timestamp = created_timestamp
+from .base import Facet
+from ..commands import CommandSet, thing
+from ..utils import created_timestamp
 
 
 class DescriptionFacet(Facet):

@@ -1,13 +1,13 @@
 from karmabot.core import ircutils, VERSION
 
-from .register import facet_registry, presenter_registry
+from ..register import facet_registry, presenter_registry
 
-from .facets.irc import IRCChannelFacet, IRCUserFacet
-from .facets.bot import KarmaBotFacet
-from .facets.name import NameFacet
-from .facets.description import DescriptionFacet
-from .facets.karma import KarmaFacet
-from .facets.help import HelpFacet
+from .irc import IRCChannelFacet, IRCUserFacet
+from .bot import KarmaBotFacet
+from .name import NameFacet
+from .description import DescriptionFacet
+from .karma import KarmaFacet
+from .help import HelpFacet
 
 
 class FacetManager(object):
