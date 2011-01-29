@@ -11,7 +11,6 @@ from .facets.help import HelpFacet
 
 
 class FacetManager(object):
-
     core_facets = (IRCChannelFacet, IRCUserFacet,
                    KarmaFacet, KarmaBotFacet,
                    DescriptionFacet, HelpFacet,
@@ -20,6 +19,10 @@ class FacetManager(object):
     def load_core(self):
         for facet in self.core_facets:
             facet_registry.register(facet)
+
+    def load_extensions(self, extensions):
+        for facet in extensions:
+            __import__(facet)
 
 
 @presenter_registry.register(set(["name", "description"]))

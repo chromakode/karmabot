@@ -12,6 +12,7 @@ from twisted.python import log
 
 from .thing import ThingStore
 from .commands import listen, thing
+from .facet_manager import FacetManager
 
 
 class Context(object):
@@ -52,12 +53,13 @@ class KarmaBot(irc.IRCClient):
         self.init()
 
     def init(self):
-
+        self.facet_manager = FacetManager()
+        self.facet_manager.load_core()
+        self.facet_manager.load_extensions(self.factory.extensions)
         self.things = ThingStore()
         self.things.load()
         self.command_parser = thing.compile()
         self.listen_parser = listen.compile()
-
         self.save_timer = task.LoopingCall(self.save)
         self.save_timer.start(60.0 * 5, now=False)
 
@@ -141,12 +143,13 @@ class KarmaBot(irc.IRCClient):
 class KarmaBotFactory(ReconnectingClientFactory):
     protocol = KarmaBot
 
-    def __init__(self, filename, nick, channels, trusted, password=None):
+    def __init__(self, filename, nick, channels, trusted, password=None, extensions=[]):
         self.nick = nick
         self.channels = channels
         self.filename = filename
         self.trusted = trusted
         self.password = password
+        self.extensions = extensions
 
     def buildProtocol(self, addr):
         # Reset the ReconnectingClientFactory reconnect delay because we don't

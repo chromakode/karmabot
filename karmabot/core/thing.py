@@ -148,17 +148,17 @@ class ThingStore(dict):
         self.port = port
         self.db = db
         self.data = None
-        self.things = None
+        self.redis = None
 
     def load(self):
-        self.things = Redis(host=self.host, port=self.port, db=self.db)
+        self.redis = Redis(host=self.host, port=self.port, db=self.db)
 
     def save(self):
-        self.things.save()
+        self.redis.save()
 
     @property
     def count(self):
-        return self.things.dbsize()
+        return self.redis.dbsize()
 
     def _id_from_name(self, name):
         name = name.strip()
@@ -166,16 +166,16 @@ class ThingStore(dict):
         return thing_id
 
     def add_thing(self, thing_id, thing):
-        if not self.things.exists(thing_id):
-            self.things.set(thing_id, cPickle.dumps(thing,
+        if not self.redis.exists(thing_id):
+            self.redis.set(thing_id, cPickle.dumps(thing,
                                                     cPickle.HIGHEST_PROTOCOL))
 
     def get_thing(self, name, context, with_facet=None):
         name = name.strip("() ")
         thing_id = self._id_from_name(name)
 
-        if self.things.exists(thing_id):
-            thing = cPickle.loads(self.things.get(thing_id))
+        if self.redis.exists(thing_id):
+            thing = cPickle.loads(self.redis.get(thing_id))
         else:
             thing = Thing.create(thing_id, name, context)
 
@@ -183,8 +183,8 @@ class ThingStore(dict):
             return None
         else:
             self.add_thing(thing_id, thing)
-            return cPickle.loads(self.things.get(thing_id))
+            return cPickle.loads(self.redis.get(thing_id))
 
     def set_thing(self, thing_id, thing):
-        return self.things.set(thing_id, cPickle.dumps(thing,
-                                                       cPickle.HIGHEST_PROTOCOL))
+        return self.redis.set(thing_id,
+                               cPickle.dumps(thing, cPickle.HIGHEST_PROTOCOL))

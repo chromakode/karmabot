@@ -5,6 +5,7 @@
 # See LICENSE for more details.
 import time
 
+
 class Cache:
     def __init__(self, func, expire_seconds=None):
         self.func = func
@@ -13,7 +14,7 @@ class Cache:
         self.last_time = None
         self.last_args = None
         self.last_kwargs = None
-        
+
     def __call__(self, *args, **kwargs):
         call_time = time.time()
         if args != self.last_args or kwargs != self.last_kwargs or \
@@ -22,8 +23,7 @@ class Cache:
             self.last_time = call_time
             self.last_args = args
             self.last_kwargs = kwargs
-            
         return self.last_result
-        
+
     def reset(self):
         self.last_time = None
