@@ -21,7 +21,7 @@ class DescriptionFacet(Facet):
     @commands.add(u"{thing} is {description}",
                   u"add a description to {thing}")
     def description(self, context, thing, description):
-        self.descriptions.append({"created": created_timestamp(context),
+        self.data.append({"created": created_timestamp(context),
                                   "text": description})
 
     @commands.add(u"forget that {thing} is {description}",
@@ -34,13 +34,9 @@ class DescriptionFacet(Facet):
                 log.msg("removed %s" % desc)
 
     @property
-    def data(self):
-        return self.thing.data.setdefault(self.__class__.name, [])
-
-    @property
     def descriptions(self):
         return self.data
 
-    def present(self):
+    def present(self, context):
         return u", ".join(desc["text"] for desc in self.descriptions) \
             or u"<no description>"

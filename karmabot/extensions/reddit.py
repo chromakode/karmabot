@@ -43,10 +43,7 @@ class RedditorFacet(Facet):
 
     @property
     def username(self):
-        if self.has_data and "username" in self.data:
-            return self.data["username"]
-        else:
-            return self.thing.name
+        return self.data.get("username", self.thing.name)
 
     @username.setter
     def username(self, value):

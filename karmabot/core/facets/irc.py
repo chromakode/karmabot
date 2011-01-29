@@ -41,6 +41,9 @@ class IRCChannelFacet(Facet):
     def topic(self, value):
         self.data["topic"] = value
 
+    def present(self, context):
+        return u"Topic: {topic}".format(topic=self.topic)
+
 
 class IRCUserFacet(Facet):
     #TODO: IRCUser facet, with trusted/admin types and verified hostmasks
@@ -62,5 +65,5 @@ class IRCUserFacet(Facet):
     @listen.add("u{message}",
                 u'manage messages coming in')
     def message(self, context, **arg):
-        user_thing = context.bot.things.get_thing(context.nick, context)
+        user_thing = context.bot.things.get(context.nick, context)
         user_thing.add_facet("ircuser")

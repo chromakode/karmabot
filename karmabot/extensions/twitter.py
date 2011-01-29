@@ -39,13 +39,10 @@ class TwitterFacet(Facet):
                   help=u"set {thing}'s twitter username to {username}")
     def set_twitter_username(self, thing, username, context):
         self.username = username
-    
+
     @property
     def username(self):
-        if self.has_data and "username" in self.data:
-            return self.data["username"]
-        else:
-            return self.thing.name
+        return self.data.get("username", self.thing.name)
         
     @username.setter
     def username(self, value):

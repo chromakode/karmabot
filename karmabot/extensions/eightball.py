@@ -4,7 +4,7 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 from karmabot.core.facets import Facet
-from  karmabot import command, thing
+from  karmabot.core.commands import CommandSet, thing
 import random
 
 predictions = [ "As I see it, yes",
@@ -31,12 +31,12 @@ predictions = [ "As I see it, yes",
 @thing.facet_classes.register
 class EightBallFacet(Facet):
     name = "eightball"    
-    commands = command.thing.add_child(command.FacetCommandSet(name))
-    
+    commands = thing.add_child(CommandSet(name))
+
     @classmethod
     def does_attach(cls, thing):
         return thing.name == "eightball"  
-    
+
     @commands.add("shake {thing}", help="shake the magic eightball")
     def shake(self, thing, context):
         context.reply(random.choice(predictions) + ".")

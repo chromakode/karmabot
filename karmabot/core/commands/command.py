@@ -51,21 +51,23 @@ class CommandParser(object):
     def handle_command(self, text, context, handled=False):
         for command_info in self.command_infos:
             match = command_info["re"].search(text)
+
             if match:
                 instance = None
-                foo = match.groupdict()
-                thing = foo.get('thing', None)
+                match_group = match.groupdict()
+                thing = match_group.get('thing', None)
                 command = command_info['command']
-                foo.update({'context': context})
+                match_group.update({'context': context})
 
                 if thing:
-                    foo.update({'thing': context.bot.things.get_thing(thing,
-                                                                     context)})
+                    match_group.update(
+                        {'thing': context.bot.things.get(thing, context)}
+                        )
                     handler_cls = command.handler.__module__.split('.').pop()
-                    instance = foo['thing'].facets.get(handler_cls)
+                    instance = match_group['thing'].facets.get(handler_cls)
 
-                substitution = self.dispatch_command(command, instance, foo)
-
+                substitution = self.dispatch_command(command,
+                                                     instance, match_group)
                 handled = True
                 if substitution:
                     # Start over with the new string
@@ -75,7 +77,6 @@ class CommandParser(object):
 
                 if command_info["exclusive"]:
                     break
-
         return (handled, text)
 
     def dispatch_command(self, command, instance, kw):
@@ -83,7 +84,8 @@ class CommandParser(object):
             context = kw.get('context')
             command.handler(instance, **kw)
             if context:
-                context.bot.things.set_thing(instance.thing.thing_id,
-                                             instance.thing)
+                context.bot.things.set(instance.thing.thing_id,
+                                       instance.thing)
+            return None
         else:
             return command.handler(command, **kw)

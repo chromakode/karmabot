@@ -19,32 +19,4 @@ class FacetRegistry(dict):
             if facet_class.name not in exclude:
                 facet_class(thing)
 
-
-class PresenterRegistry(list):
-
-    def _register(self, handled_facets, presenter, order=0):
-        self.append(((set(handled_facets), order), presenter))
-
-        # Sort by number of facets first, then order
-        self.sort(key=lambda ((fs, o), p): (-len(fs), o))
-
-    def register(self, handled_facets, order=0):
-        def doit(presenter):
-            self._register(handled_facets, presenter, order)
-        return doit
-
-    def get(self, handled_facets):
-        for ((presenter_handled_facets, order), presenter) in self:
-            if handled_facets == presenter_handled_facets:
-                return presenter
-
-    def iter_presenters(self, thing):
-        # FIXME: This should be optimized
-        facets = set(thing.facets.keys())
-        for ((handled_facets, order), presenter) in self:
-            if facets.issuperset(handled_facets):
-                facets.difference_update(handled_facets)
-                yield presenter
-
 facet_registry = FacetRegistry()
-presenter_registry = PresenterRegistry()

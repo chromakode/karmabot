@@ -6,6 +6,7 @@
 
 from karmabot.core.commands import CommandSet, thing
 from .base import Facet
+from ..ircutils import bold
 
 
 class NameFacet(Facet):
@@ -20,3 +21,6 @@ class NameFacet(Facet):
     def describe(self, context, thing):
         # this is a thing object not the list of things
         context.reply(thing.describe(context))
+
+    def present(self, context):
+        return u"%s" % bold(self.thing.name)

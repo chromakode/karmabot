@@ -5,22 +5,18 @@
 # See LICENSE for more details.
 import urllib
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
-from karmabot import thing
-from karmabot.core.register import facet_registry, presenter_registry
+from karmabot.core.register import facet_registry
 from karmabot.core.facets import Facet
-from karmabot import command
-from karmabot.utils import Cache
+from karmabot.core.commands import thing, CommandSet
+from karmabot.core.utils import Cache
 
 
 @facet_registry.register
 class GitHubFacet(Facet):
     name = "github"
-    commands = command.thing.add_child(command.FacetCommandSet(name))
+    commands = thing.add_child(CommandSet(name))
 
     def __init__(self, thing):
         super(self, Facet).__init__(self, thing)
@@ -38,16 +34,13 @@ class GitHubFacet(Facet):
         self.thing.remove_facet(self)
 
     @commands.add(u"{thing} has github username {username}",
-                  help=u"set {thing}'s github username to {username}")
+                  u"set {thing}'s github username to {username}")
     def set_github_username(self, thing, username, context):
         self.username = username
 
     @property
     def username(self):
-        if self.has_data and "username" in self.data:
-            return self.data["username"]
-        else:
-            return self.thing.name
+        return self.data.get("username", self.thing.name)
 
     @username.setter
     def set_username(self, value):
@@ -61,7 +54,7 @@ class GitHubFacet(Facet):
         return json.load(about)
 
     @commands.add(u"{thing} commits",
-                  help=u"show the last 3 commits by {thing}")
+                  u"show the last 3 commits by {thing}")
     def get_github_commits(self, thing, context):
         info = self.get_info()
         pushes = filter(lambda x: x["type"] == "PushEvent", info)
@@ -72,17 +65,14 @@ class GitHubFacet(Facet):
                     last_commit_msg=push["payload"]["shas"][0][2]))
         context.reply("\n".join(lines))
 
+    def present(self, context):
+            github = self.thing.facets["github"]
+            text = u"http://github.com/{0}".format(github.username)
+            return text
+
 
 @thing.add(format=u"{thing} is on github",
            help_str=u"link {thing}'s github account to their user",
            exclusive=True)
-@command.thing_command
 def set_githubber(thing, context):
     thing.add_facet(GitHubFacet)
-
-
-@presenter_registry.register(set(["github"]))
-def present(thing, context):
-    github = thing.facets["github"]
-    text = u"http://github.com/{0}".format(github.username)
-    return text

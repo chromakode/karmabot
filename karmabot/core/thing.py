@@ -3,12 +3,12 @@
 #
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
-import time
+
 import cPickle
 from redis import Redis
 
 from .facets import Facet
-from .register import facet_registry, presenter_registry
+from .register import facet_registry
 from .utils import created_timestamp
 
 
@@ -20,11 +20,8 @@ class Thing(object):
         self.data = {"name": name, "created": created_timestamp(context),
                      "+facets": [],
                      "-facets": []}
-        self.facets = dict()
-
+        self.facets = {}
         facet_registry.attach(self, set(self.data["-facets"]))
-        for facet in self.facets:
-            self.add_facet(facet)
 
     def add_facet(self, facet):
         if str(facet) in self.facets:
@@ -44,13 +41,10 @@ class Thing(object):
                         yield cmd
 
     def describe(self, context, facets=None):
-        if facets:
-            return presenter_registry.get(facets)(self, context)
-        else:
-            return "\n".join(
-                filter(None,
-                       (presenter(self, context) for presenter
-                            in presenter_registry.iter_presenters(self))))
+        final_txt = u""
+        for facet in self.facets.itervalues():
+            final_txt += facet.present(context)
+        return final_txt
 
 
 class ThingStore(dict):
@@ -60,30 +54,22 @@ class ThingStore(dict):
         self.port = port
         self.db = db
         self.data = None
-        self.redis = None
-
-    def load(self):
         self.redis = Redis(host=self.host, port=self.port, db=self.db)
+        self.save = self.redis.save
 
-    def save(self):
-        self.redis.save()
-
-    @property
-    def count(self):
+    def __len__(self):
         return self.redis.dbsize()
 
-    def get_thing(self, name, context, with_facet=None):
+    def get(self, name, context, with_facet=None):
         name = name.strip("() ")
         thing_id = name.lower()
-
         if self.redis.exists(thing_id):
             thing = cPickle.loads(self.redis.get(thing_id))
         else:
             thing = Thing(thing_id, name, context)
-            self.set_thing(thing_id, thing)
-
+            self.set(thing_id, thing)
         return thing
 
-    def set_thing(self, thing_id, thing):
+    def set(self, thing_id, thing):
         return self.redis.set(thing_id,
                               cPickle.dumps(thing, cPickle.HIGHEST_PROTOCOL))

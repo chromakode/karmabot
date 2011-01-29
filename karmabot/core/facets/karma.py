@@ -12,8 +12,7 @@ class KarmaFacet(Facet):
     name = "karma"
     listens = listen.add_child(CommandSet(name))
 
-    @classmethod
-    def does_attach(cls, thing):
+    def does_attach(self, thing):
         return True
 
     @listens.add(u"{thing}++", help_str=u"add 1 to karma")
@@ -28,6 +27,5 @@ class KarmaFacet(Facet):
         self.data[context.who] -= 1
         return thing.name
 
-    @property
-    def karma(self):
-        return sum(self.data.itervalues())
+    def present(self, context):
+        return u"({karma}): ".format(karma=self.data.get(self.thing.name, 0))

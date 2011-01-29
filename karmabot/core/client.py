@@ -56,7 +56,6 @@ class KarmaBot(irc.IRCClient):
         self.facet_manager.load_core()
         self.facet_manager.load_extensions(self.factory.extensions)
         self.things = ThingStore()
-        self.things.load()
         self.command_parser = thing.compile()
         self.listen_parser = listen.compile()
         self.save_timer = task.LoopingCall(self.save)
@@ -85,7 +84,7 @@ class KarmaBot(irc.IRCClient):
         self.things.save()
 
     def topicUpdated(self, user, channel, newTopic):
-        thing = self.things.get_thing(channel, Context(user, channel, self))
+        thing = self.things.get(channel, Context(user, channel, self))
         thing.facets["ircchannel"].topic = newTopic
 
     def error_msg(self, channel):

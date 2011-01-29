@@ -23,20 +23,11 @@ class Facet(object):
     def data(self):
         return self.thing.data.setdefault(self.name, {})
 
-    @data.deleter
-    def data(self):
-        del self.thing.data[self.name]
-
-    @property
-    def has_data(self):
-        return self.name in self.thing.data
-
-    @classmethod
-    def does_attach(cls, thing):
+    def does_attach(self, thing):
         raise NotImplementedError
 
     def on_attach(self):
         pass
 
-    def present(self):
-        raise NotImplementedError
+    def present(self, context):
+        return u""
