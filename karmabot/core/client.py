@@ -35,14 +35,13 @@ class Context(object):
     def reply(self, msg, where=None, replied=True):
         if not where:
             where = self.where
-
         self.bot.msg(where, msg, priv=self.private)
         self.replied = replied
 
 
 class KarmaBot(irc.IRCClient):
-    affirmative_prefixes = [u"Affirmative", u"Alright", u"Done",
-                            u"K", u"OK", u"Okay", u"Sure", u"Yes"]
+    affirmative_prefixes = [u"Affirmative", u"Alright", u"Done", u"K", u"OK",
+                            u"Okay", u"Sure", u"Yes"]
     huh_msgs = [u"Huh?", u"What?"]
 
     def connectionMade(self):
@@ -143,7 +142,8 @@ class KarmaBot(irc.IRCClient):
 class KarmaBotFactory(ReconnectingClientFactory):
     protocol = KarmaBot
 
-    def __init__(self, filename, nick, channels, trusted, password=None, extensions=[]):
+    def __init__(self, filename, nick, channels, trusted, password=None,
+                 extensions=[]):
         self.nick = nick
         self.channels = channels
         self.filename = filename

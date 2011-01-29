@@ -20,11 +20,10 @@ class ThingFacet(object):
     listens = None
 
     def __init__(self, thing):
-        self._thing = thing
-
-    @property
-    def thing(self):
-        return self._thing
+        self.thing = thing
+        if self.does_attach(thing):
+            thing.add_facet(self)
+            self.on_attach()
 
     @property
     def data(self):
@@ -38,13 +37,6 @@ class ThingFacet(object):
     @property
     def has_data(self):
         return self.__class__.name in self.thing.data
-
-    @classmethod
-    def attach(cls, thing):
-        if cls.does_attach(thing):
-            facet = cls(thing)
-            thing.add_facet(facet)
-            facet.on_attach()
 
     @classmethod
     def does_attach(cls, thing):
@@ -61,7 +53,7 @@ class Thing(object):
 
     def __init__(self, thing_id, data):
         self._thing_id = thing_id
-        self._data = data
+        self.data = data
         self._facets = dict()
 
         facet_registry.attach(self, set(self.data.get("-facets", [])))
@@ -80,11 +72,7 @@ class Thing(object):
 
     @property
     def name(self):
-        return self._data["name"]
-
-    @property
-    def data(self):
-        return self._data
+        return self.data["name"]
 
     @property
     def facets(self):
@@ -167,8 +155,8 @@ class ThingStore(dict):
 
     def add_thing(self, thing_id, thing):
         if not self.redis.exists(thing_id):
-            self.redis.set(thing_id, cPickle.dumps(thing,
-                                                    cPickle.HIGHEST_PROTOCOL))
+            self.redis.set(thing_id,
+                           cPickle.dumps(thing, cPickle.HIGHEST_PROTOCOL))
 
     def get_thing(self, name, context, with_facet=None):
         name = name.strip("() ")

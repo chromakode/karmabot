@@ -17,7 +17,7 @@ class FacetRegistry(dict):
     def attach(self, thing, exclude=set()):
         for facet_class in self:
             if facet_class.name not in exclude:
-                facet_class.attach(thing)
+                facet_class(thing)
 
 
 class PresenterRegistry(list):
