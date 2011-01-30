@@ -53,6 +53,7 @@ setup(
         },
 
     install_requires=[
+        'blinker'
         'pyopenssl',
         'twisted',
         'redis',

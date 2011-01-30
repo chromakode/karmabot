@@ -6,6 +6,7 @@
 
 from karmabot.core import VERSION
 from .base import Facet
+from karmabot.core import storage
 
 
 #TODO: add save/reload/quit commands, customizable messages and behavior
@@ -18,4 +19,4 @@ class KarmaBotFacet(Facet):
 
     def present(self, context):
         return u"[v{0} - {1} subjects]".format(VERSION,
-                                               len(context.bot.subjects))
+                                               len(storage.db))

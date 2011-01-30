@@ -5,6 +5,7 @@
 # See LICENSE for more details.
 
 from karmabot.core.commands import CommandSet, listen, action
+from karmabot.core import storage
 from .base import Facet
 
 
@@ -64,5 +65,5 @@ class IRCUserFacet(Facet):
     @listen.add("u{message}",
                 u'manage messages coming in')
     def message(self, context, **arg):
-        user_subject = context.bot.subjects.get(context.nick)
+        user_subject = storage.db.get(context.nick)
         user_subject.add_facet("ircuser")

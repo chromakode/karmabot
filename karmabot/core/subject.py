@@ -4,10 +4,6 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 
-import cPickle
-from redis import Redis
-
-from .facets import Facet
 from .register import facet_registry
 
 
@@ -25,7 +21,7 @@ class Subject(object):
     def add_facet(self, facet):
         if str(facet) in self.facets:
             return
-        if not isinstance(facet, Facet):
+        if not isinstance(facet, str):
             facet = facet_registry[facet](self)
         self.facets[str(facet)] = facet
 
@@ -46,26 +42,3 @@ class Subject(object):
         for facet in sorted_facets:
             final_txt += facet.present(context)
         return final_txt
-
-
-class Catalog(dict):
-    def __init__(self, host='localhost', port=6379, db=0):
-        self.redis = Redis(host=host, port=port, db=db)
-        self.save = self.redis.save
-
-    def __len__(self):
-        return self.redis.dbsize()
-
-    def get(self, key):
-        subject = key.strip("() ")
-        key = subject.lower()
-        if self.redis.exists(key):
-            subject = cPickle.loads(self.redis.get(key))
-        else:
-            subject = Subject(key, subject)
-            self.set(key, subject)
-        return subject
-
-    def set(self, key, value):
-        return self.redis.set(key,
-                              cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL))

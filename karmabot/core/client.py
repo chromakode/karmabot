@@ -10,9 +10,10 @@ from twisted.internet import reactor, task
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python import log
 
+from .signal import post_connection
+from karmabot.core import storage
 from .commands import listen, action
-from .facets import FacetManager
-from .subject import Catalog
+from .facets.manager import FacetManager
 
 
 class Context(object):
@@ -45,13 +46,13 @@ class KarmaBot(irc.IRCClient):
         self.password = self.factory.password
         self.ignores = ['Global', self.nickname]
         irc.IRCClient.connectionMade(self)
+        post_connection.send()
         self.init()
 
     def init(self):
         self.facet_manager = FacetManager()
         self.facet_manager.load_core()
         self.facet_manager.load_extensions(self.factory.extensions)
-        self.subjects = Catalog()
         self.command_parser = action.compile()
         self.listen_parser = listen.compile()
         self.save_timer = task.LoopingCall(self.save)
@@ -59,7 +60,7 @@ class KarmaBot(irc.IRCClient):
 
     def connectionLost(self, reason):
         log.msg("Disconnected")
-        self.subjects.save()
+        storage.db.save()
         irc.IRCClient.connectionLost(self, reason)
 
     def signedOn(self):
@@ -77,10 +78,10 @@ class KarmaBot(irc.IRCClient):
 
     def save(self):
         log.msg("Saving data")
-        self.subjects.save()
+        storage.db.save()
 
     def topicUpdated(self, user, channel, newTopic):
-        subject = self.subjects.get(channel)
+        subject = storage.db.get(channel)
         subject.facets["ircchannel"].topic = newTopic
 
     def error_msg(self, channel):

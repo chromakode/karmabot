@@ -4,6 +4,7 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 import re
+from karmabot.core import storage
 
 
 # TODO: regular expressions in this module should be
@@ -61,7 +62,7 @@ class CommandParser(object):
 
                 if subject:
                     match_group.update(
-                        {'subject': context.bot.subjects.get(subject)})
+                        {'subject': storage.db.get(subject)})
                     handler_cls = command.handler.__module__.split('.').pop()
                     instance = match_group['subject'].facets.get(handler_cls)
 
@@ -83,8 +84,8 @@ class CommandParser(object):
             context = kw.get('context')
             command.handler(instance, **kw)
             if context:
-                context.bot.subjects.set(instance.subject.key,
-                                       instance.subject)
+                storage.db.set(instance.subject.key,
+                               instance.subject)
             return None
         else:
             return command.handler(command, **kw)

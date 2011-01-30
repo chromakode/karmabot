@@ -6,6 +6,5 @@
 #
 
 from .base import Facet
-from .manager import FacetManager
 
-__all__ = ["Facet", "FacetManager"]
+__all__ = ["Facet"]
