@@ -6,28 +6,28 @@
 from twisted.python import log
 
 from .base import Facet
-from ..commands import CommandSet, thing
+from ..commands import CommandSet, action
 from ..utils import created_timestamp
 
 
 class DescriptionFacet(Facet):
     name = "description"
-    commands = thing.add_child(CommandSet(name))
+    commands = action.add_child(CommandSet(name))
     display_key = 3
 
     @classmethod
-    def does_attach(cls, thing):
+    def does_attach(cls, subject):
         return True
 
-    @commands.add(u"{thing} is {description}",
-                  u"add a description to {thing}")
-    def description(self, context, thing, description):
+    @commands.add(u"{subject} is {description}",
+                  u"add a description to {subject}")
+    def description(self, context, subject, description):
         self.data.append({"created": created_timestamp(context),
                                   "text": description})
 
-    @commands.add(u"forget that {thing} is {description}",
-                  u"drop a {description} for {thing}")
-    def forget(self, context, thing, description):
+    @commands.add(u"forget that {subject} is {description}",
+                  u"drop a {description} for {subject}")
+    def forget(self, context, subject, description):
         log.msg(self.descriptions)
         for desc in self.descriptions:
             if desc["text"] == description:

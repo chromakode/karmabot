@@ -6,15 +6,15 @@
 
 
 class Facet(object):
-    name = "thing"
+    name = None
     commands = None
     listens = None
     display_key = -1
 
-    def __init__(self, thing):
-        self.thing = thing
-        if self.does_attach(thing):
-            thing.add_facet(self)
+    def __init__(self, subject):
+        self.subject = subject
+        if self.does_attach(subject):
+            subject.add_facet(self)
             self.on_attach()
 
     def __str__(self):
@@ -22,9 +22,9 @@ class Facet(object):
 
     @property
     def data(self):
-        return self.thing.data.setdefault(self.name, {})
+        return self.subject.data.setdefault(self.name, {})
 
-    def does_attach(self, thing):
+    def does_attach(self, subject):
         raise NotImplementedError
 
     def on_attach(self):

@@ -13,9 +13,9 @@ class FacetRegistry(dict):
     def __iter__(self):
         return self.itervalues()
 
-    def attach(self, thing, exclude=set()):
+    def attach(self, subject, exclude=set()):
         for facet_class in self:
             if facet_class.name not in exclude:
-                facet_class(thing)
+                facet_class(subject)
 
 facet_registry = FacetRegistry()

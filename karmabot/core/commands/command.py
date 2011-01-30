@@ -25,7 +25,7 @@ class Command(object):
     def to_regex(self):
         def sub_parameter(match):
             name = match.group(1)
-            if name == "thing":
+            if name == "subject":
                 parameter_regex = r"(?:\([^()]+\))|[#!\w]+"
             else:
                 # This regex may come back to haunt me.
@@ -55,16 +55,15 @@ class CommandParser(object):
             if match:
                 instance = None
                 match_group = match.groupdict()
-                thing = match_group.get('thing', None)
+                subject = match_group.get('subject', None)
                 command = command_info['command']
                 match_group.update({'context': context})
 
-                if thing:
+                if subject:
                     match_group.update(
-                        {'thing': context.bot.things.get(thing, context)}
-                        )
+                        {'subject': context.bot.subjects.get(subject)})
                     handler_cls = command.handler.__module__.split('.').pop()
-                    instance = match_group['thing'].facets.get(handler_cls)
+                    instance = match_group['subject'].facets.get(handler_cls)
 
                 substitution = self.dispatch_command(command,
                                                      instance, match_group)
@@ -84,8 +83,8 @@ class CommandParser(object):
             context = kw.get('context')
             command.handler(instance, **kw)
             if context:
-                context.bot.things.set(instance.thing.thing_id,
-                                       instance.thing)
+                context.bot.subjects.set(instance.subject.key,
+                                       instance.subject)
             return None
         else:
             return command.handler(command, **kw)

@@ -13,9 +13,9 @@ class KarmaBotFacet(Facet):
     name = "karmabot"
     display_key = 1
 
-    def does_attach(self, thing):
-        from pdb import set_trace; set_trace()
-        return thing.name == "karmabot"
+    def does_attach(self, subject):
+        return subject.name == "karmabot"
 
     def present(self, context):
-        return u"[v{0} - {1} things]".format(VERSION, len(context.bot.things))
+        return u"[v{0} - {1} subjects]".format(VERSION,
+                                               len(context.bot.subjects))

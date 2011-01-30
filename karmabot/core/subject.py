@@ -9,15 +9,14 @@ from redis import Redis
 
 from .facets import Facet
 from .register import facet_registry
-from .utils import created_timestamp
 
 
-class Thing(object):
+class Subject(object):
 
-    def __init__(self, thing_id, name, context):
-        self.thing_id = thing_id
+    def __init__(self, key, name):
+        self.key = key
         self.name = name
-        self.data = {"name": name, "created": created_timestamp(context),
+        self.data = {"name": name,
                      "+facets": [],
                      "-facets": []}
         self.facets = {}
@@ -28,7 +27,7 @@ class Thing(object):
             return
         if not isinstance(facet, Facet):
             facet = facet_registry[facet](self)
-        self.facets[facet] = facet
+        self.facets[str(facet)] = facet
 
     def remove_facet(self, facet):
         del self.facets[str(facet)]
@@ -40,7 +39,7 @@ class Thing(object):
                     for cmd in command_set:
                         yield cmd
 
-    def describe(self, context, facets=None):
+    def describe(self, context):
         final_txt = u""
         sorted_facets = sorted(self.facets.itervalues(),
                                key=lambda x: x.display_key)
@@ -49,29 +48,24 @@ class Thing(object):
         return final_txt
 
 
-class ThingStore(dict):
-
+class Catalog(dict):
     def __init__(self, host='localhost', port=6379, db=0):
-        self.host = host
-        self.port = port
-        self.db = db
-        self.data = None
-        self.redis = Redis(host=self.host, port=self.port, db=self.db)
+        self.redis = Redis(host=host, port=port, db=db)
         self.save = self.redis.save
 
     def __len__(self):
         return self.redis.dbsize()
 
-    def get(self, name, context, with_facet=None):
-        name = name.strip("() ")
-        thing_id = name.lower()
-        if self.redis.exists(thing_id):
-            thing = cPickle.loads(self.redis.get(thing_id))
+    def get(self, key):
+        subject = key.strip("() ")
+        key = subject.lower()
+        if self.redis.exists(key):
+            subject = cPickle.loads(self.redis.get(key))
         else:
-            thing = Thing(thing_id, name, context)
-            self.set(thing_id, thing)
-        return thing
+            subject = Subject(key, subject)
+            self.set(key, subject)
+        return subject
 
-    def set(self, thing_id, thing):
-        return self.redis.set(thing_id,
-                              cPickle.dumps(thing, cPickle.HIGHEST_PROTOCOL))
+    def set(self, key, value):
+        return self.redis.set(key,
+                              cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL))

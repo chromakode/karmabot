@@ -30,4 +30,4 @@ class Cache:
 
 
 def created_timestamp(context):
-    return {"who": context.who, "when": time.time(), "where": context.where}
+    return {"who": context.nick, "when": time.time(), "where": context.where}
