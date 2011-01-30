@@ -6,7 +6,6 @@
 
 
 class FacetRegistry(dict):
-
     def register(self, facet_class):
         self[facet_class.name] = facet_class
         return facet_class

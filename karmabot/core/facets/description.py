@@ -13,6 +13,7 @@ from ..utils import created_timestamp
 class DescriptionFacet(Facet):
     name = "description"
     commands = thing.add_child(CommandSet(name))
+    display_key = 3
 
     @classmethod
     def does_attach(cls, thing):
@@ -38,5 +39,5 @@ class DescriptionFacet(Facet):
         return self.data
 
     def present(self, context):
-        return u", ".join(desc["text"] for desc in self.descriptions) \
-            or u"<no description>"
+        return (u", ".join(desc["text"] for desc in self.descriptions)
+                or u"<no description>")

@@ -12,8 +12,8 @@ from ..ircutils import bold
 class NameFacet(Facet):
     name = "name"
     commands = thing.add_child(CommandSet(name))
+    display_key = 0
 
-    @classmethod
     def does_attach(cls, thing):
         return True
 

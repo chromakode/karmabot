@@ -42,7 +42,9 @@ class Thing(object):
 
     def describe(self, context, facets=None):
         final_txt = u""
-        for facet in self.facets.itervalues():
+        sorted_facets = sorted(self.facets.itervalues(),
+                               key=lambda x: x.display_key)
+        for facet in sorted_facets:
             final_txt += facet.present(context)
         return final_txt
 

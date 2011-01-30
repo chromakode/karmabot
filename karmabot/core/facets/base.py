@@ -9,6 +9,7 @@ class Facet(object):
     name = "thing"
     commands = None
     listens = None
+    display_key = -1
 
     def __init__(self, thing):
         self.thing = thing
