@@ -18,5 +18,4 @@ class KarmaBotFacet(Facet):
         return subject.name == "karmabot"
 
     def present(self, context):
-        return u"[v{0} - {1} subjects]".format(VERSION,
-                                               len(storage.db))
+        return u"[v{0} - {1} subjects]".format(VERSION, len(storage.db))

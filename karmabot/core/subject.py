@@ -8,7 +8,6 @@ from .register import facet_registry
 
 
 class Subject(object):
-
     def __init__(self, key, name):
         self.key = key
         self.name = name
