@@ -12,7 +12,7 @@ from urllib2 import urlopen
 from karmabot.core.client import thing
 from karmabot.core.commands.sets import CommandSet
 from karmabot.core.register import facet_registry
-from karmabot.core.thing import ThingFacet
+from karmabot.core.facets import Facet
 
 import re
 import htmlentitydefs
@@ -51,7 +51,7 @@ def unescape(text):
 
 
 @facet_registry.register
-class LmgtfyFacet(ThingFacet):
+class LmgtfyFacet(Facet):
     name = "lmgtfy"
     commands = thing.add_child(CommandSet(name))
 

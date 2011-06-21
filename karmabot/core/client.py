@@ -10,13 +10,10 @@ from twisted.internet import reactor, task
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python import log
 
-from .thing import ThingStore
-from .commands.sets import CommandSet
-
-VERSION = "0.2"
-
-listen = CommandSet("listen")
-thing = CommandSet("thing", regex_format="(^{0}$)")
+from .signal import post_connection
+from karmabot.core import storage
+from .commands import listen, action
+from .facets.manager import FacetManager
 
 
 class Context(object):
@@ -32,41 +29,38 @@ class Context(object):
     def nick(self):
         return self.user.split("!", 1)[0]
 
-    @property
-    def who(self):
-        return self.nick
-
     def reply(self, msg, where=None, replied=True):
         if not where:
             where = self.where
-
         self.bot.msg(where, msg, priv=self.private)
         self.replied = replied
 
 
 class KarmaBot(irc.IRCClient):
-    affirmative_prefixes = [u"Affirmative", u"Alright", u"Done",
-                            u"K", u"OK", u"Okay", u"Sure", u"Yes"]
+    affirmative_prefixes = [u"Affirmative", u"Alright", u"Done", u"K", u"OK",
+                            u"Okay", u"Sure", u"Yes"]
     huh_msgs = [u"Huh?", u"What?"]
 
     def connectionMade(self):
         self.nickname = self.factory.nick
         self.password = self.factory.password
+        self.ignores = ['Global', self.nickname]
         irc.IRCClient.connectionMade(self)
+        post_connection.send()
         self.init()
 
     def init(self):
-        self.things = ThingStore(self.factory.filename)
-        self.things.load()
-        self.command_parser = thing.compile()
+        self.facet_manager = FacetManager()
+        self.facet_manager.load_core()
+        self.facet_manager.load_extensions(self.factory.extensions)
+        self.command_parser = action.compile()
         self.listen_parser = listen.compile()
-
         self.save_timer = task.LoopingCall(self.save)
         self.save_timer.start(60.0 * 5, now=False)
 
     def connectionLost(self, reason):
         log.msg("Disconnected")
-        self.things.save()
+        storage.db.save()
         irc.IRCClient.connectionLost(self, reason)
 
     def signedOn(self):
@@ -84,11 +78,14 @@ class KarmaBot(irc.IRCClient):
 
     def save(self):
         log.msg("Saving data")
-        self.things.save()
+        storage.db.save()
 
     def topicUpdated(self, user, channel, newTopic):
-        thing = self.things.get_thing(channel, Context(user, channel, self))
-        thing.facets["ircchannel"].topic = newTopic
+        subject = storage.db.get(channel)
+        subject.facets["ircchannel"].topic = newTopic
+
+    def error_msg(self, channel):
+        self.msg(channel, random.choice(self.huh_msgs))
 
     def msg(self, channel, message, length=160, priv=False):
         """
@@ -108,26 +105,30 @@ class KarmaBot(irc.IRCClient):
         log.msg("[{channel}] {user}: {msg}".format(channel=channel,
                                                    user=user, msg=msg))
         msg = msg.decode("utf-8")
-
         context = Context(user, channel, self)
-        context.private = True if (channel == self.nickname and
-                                   context.nick != self.nickname) else False
+        if context.nick in self.ignores:
+            return
+        context.private = (channel == self.nickname and
+                           context.nick != self.nickname)
 
         listen_handled, msg = self.listen_parser.handle_command(msg, context)
 
         # Addressed (either in channel or by private message)
         command = None
+
         if msg.startswith(self.nickname) or context.private:
             if not context.private:
                 command = msg[len(self.factory.nick):].lstrip(" ,:").rstrip()
             else:
+                channel = context.nick
                 context.where = context.nick
                 command = msg.rstrip()
-            if not self.command_parser.handle_command(command, context)[0]:
-                self.msg(channel, random.choice(self.huh_msgs))
-            else:
-                if not context.replied:
-                    self.tell_yes(channel, context.nick)
+
+            handled, response = self.command_parser(command, context)
+            if not handled:
+                self.error_msg(channel)
+            elif not context.replied:
+                self.tell_yes(channel, context.nick)
 
     def tell_yes(self, who, nick):
         self.msg(who, u"{yesmsg}, {nick}.".format(
@@ -137,12 +138,14 @@ class KarmaBot(irc.IRCClient):
 class KarmaBotFactory(ReconnectingClientFactory):
     protocol = KarmaBot
 
-    def __init__(self, filename, nick, channels, trusted, password=None):
+    def __init__(self, filename, nick, channels, trusted, password=None,
+                 extensions=[]):
         self.nick = nick
         self.channels = channels
         self.filename = filename
         self.trusted = trusted
         self.password = password
+        self.extensions = extensions
 
     def buildProtocol(self, addr):
         # Reset the ReconnectingClientFactory reconnect delay because we don't

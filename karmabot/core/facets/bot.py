@@ -3,30 +3,19 @@
 #
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
-from karmabot.core.client import VERSION
-from karmabot.core import thing
-from karmabot.core.register import facet_registry, presenter_registry
+
+from karmabot.core import VERSION
+from .base import Facet
+from karmabot.core import storage
 
 
-@facet_registry.register
-class KarmaBotFacet(thing.ThingFacet):
+#TODO: add save/reload/quit commands, customizable messages and behavior
+class KarmaBotFacet(Facet):
     name = "karmabot"
+    display_key = 1
 
-    @classmethod
-    def does_attach(cls, thing):
-        return thing.name == "karmabot"
+    def does_attach(self, subject):
+        return subject.name == "karmabot"
 
-    #TODO: add save/reload/quit commands, customizable messages and behavior
-
-
-@presenter_registry.register(set(["karmabot", "name", "karma", "description"]))
-def present(thing, context):
-    output_str = u"{name}[v{version}]({karma}): {descriptions} ({things} things)"
-    text = output_str.format(
-        name=thing.describe(context, facets=set(["name"])),
-        karma=thing.facets["karma"].karma,
-        descriptions=thing.facets["description"].present(),
-        version=VERSION,
-        things=context.bot.things.count,
-        )
-    return text
+    def present(self, context):
+        return u"[v{0} - {1} subjects]".format(VERSION, len(storage.db))

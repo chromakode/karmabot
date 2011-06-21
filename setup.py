@@ -14,7 +14,7 @@ Links
 `````
 
 * `development version
-  <http://github.com/chromakode/karmabot/zipball/master#egg=Karmabot-dev>`_
+  <http://github.com/dcolish/karmabot/zipball/master#egg=Karmabot-dev>`_
 """
 
 from setuptools import setup, find_packages
@@ -32,7 +32,7 @@ setup(
       zip_safe=False,
     platforms='any',
     license='BSD',
-    url='http://www.github.com/dcolish/cockerel',
+    url='http://www.github.com/dcolish/karmabot',
 
     classifiers=[
         'Development Status :: 4 - Beta ',
@@ -53,7 +53,10 @@ setup(
         },
 
     install_requires=[
+        'blinker',
         'pyopenssl',
         'twisted',
+        'redis',
+        'BeautifulSoup',
         ],
     )

@@ -4,6 +4,7 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 import re
+from karmabot.core import storage
 
 
 # TODO: regular expressions in this module should be
@@ -20,12 +21,12 @@ class Command(object):
         self.help = help
         self.visible = visible
         self.exclusive = exclusive
+        self.state = None
 
     def to_regex(self):
-
         def sub_parameter(match):
             name = match.group(1)
-            if name == "thing":
+            if name == "subject":
                 parameter_regex = r"(?:\([^()]+\))|[#!\w]+"
             else:
                 # This regex may come back to haunt me.
@@ -43,25 +44,30 @@ class Command(object):
 class CommandParser(object):
 
     def __init__(self, command_infos):
-        self._command_infos = command_infos
+        self.command_infos = command_infos
+
+    def __call__(self, text, context, handled=False):
+        return self.handle_command(text, context, handled)
 
     def handle_command(self, text, context, handled=False):
-        for command_info in self._command_infos:
+        for command_info in self.command_infos:
             match = command_info["re"].search(text)
+
             if match:
                 instance = None
-                foo = match.groupdict()
-                thing = foo.get('thing', None)
+                match_group = match.groupdict()
+                subject = match_group.get('subject', None)
                 command = command_info['command']
-                foo.update({'context': context})
+                match_group.update({'context': context})
 
-                if thing:
-                    foo.update({'thing': context.bot.things.get_thing(thing,
-                                                                     context)})
+                if subject:
+                    match_group.update(
+                        {'subject': storage.db.get(subject)})
                     handler_cls = command.handler.__module__.split('.').pop()
-                    instance = foo['thing']._facets.get(handler_cls)
+                    instance = match_group['subject'].facets.get(handler_cls)
 
-                substitution = self.dispatch_command(command, instance, foo)
+                substitution = self.dispatch_command(command,
+                                                     instance, match_group)
                 handled = True
                 if substitution:
                     # Start over with the new string
@@ -71,11 +77,15 @@ class CommandParser(object):
 
                 if command_info["exclusive"]:
                     break
-
         return (handled, text)
 
     def dispatch_command(self, command, instance, kw):
         if instance:
-            return command.handler(instance, **kw)
+            context = kw.get('context')
+            command.handler(instance, **kw)
+            if context:
+                storage.db.set(instance.subject.key,
+                               instance.subject)
+            return None
         else:
             return command.handler(command, **kw)

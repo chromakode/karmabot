@@ -3,10 +3,9 @@
 #
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
-from karmabot.core.client import thing
-from karmabot.core.register import facet_registry
-from karmabot.core.thing import ThingFacet
-from karmabot.core.commands.sets import CommandSet
+
+from .base import Facet
+from karmabot.core.commands import CommandSet, action
 from itertools import chain
 
 
@@ -15,43 +14,42 @@ def numbered(strs):
             for num, line in enumerate(strs))
 
 
-@facet_registry.register
-class HelpFacet(ThingFacet):
+class HelpFacet(Facet):
     name = "help"
-    commands = thing.add_child(CommandSet(name))
+    commands = action.add_child(CommandSet(name))
     short_template = u"\"{0}\""
     full_template = short_template + u": {1}"
 
     @classmethod
-    def does_attach(cls, thing):
+    def does_attach(cls, subject):
         return True
 
-    def get_topics(self, this_thing):
+    def get_topics(self, subject):
         topics = dict()
-        for cmd in chain(thing, this_thing.iter_commands()):
+        for cmd in chain(action, subject.iter_commands()):
             if cmd.visible:
-                topic = cmd.format.replace("{thing}", thing.name)
-                help = cmd.help.replace("{thing}", thing.name)
+                topic = cmd.format.replace("{subject}", subject.name)
+                help = cmd.help.replace("{subject}", subject.name)
                 topics[topic] = help
         return topics
 
-    def format_help(self, thing, full=False):
+    def format_help(self, subject, full=False):
         line_template = self.full_template if full else self.short_template
         help_lines = [line_template.format(topic, help)
-                      for topic, help in self.get_topics(thing).items()]
+                      for topic, help in self.get_topics(subject).items()]
         help_lines.sort()
         return help_lines
 
-    @commands.add(u"help {thing}",
-                  help_str=u"view command help for {thing}")
-    def help(self, context, thing):
-        context.reply(u"Commands: " + u", ".join(self.format_help(thing)))
+    @commands.add(u"help {subject}",
+                  help_str=u"view command help for {subject}")
+    def help(self, context, subject):
+        context.reply(u"Commands: " + u", ".join(self.format_help(subject)))
 
-    @commands.add(u"help {thing} {topic}",
-                  help_str=u"view help for {topic} on {thing}")
-    def help_topic(self, context, thing, topic):
+    @commands.add(u"help {subject} {topic}",
+                  help_str=u"view help for {topic} on {subject}")
+    def help_topic(self, context, subject, topic):
         topic = topic.strip(u"\"")
-        topics = self.get_topics(thing)
+        topics = self.get_topics(subject)
         if topic in topics:
             context.reply(self.full_template.format(topic, topics[topic]))
         else:

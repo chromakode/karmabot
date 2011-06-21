@@ -11,17 +11,17 @@ try:
 except ImportError:
     import simplejson as json
     
-from karmabot import thing
-from karmabot import command
+from karmabot import command, thing
+from karmabot.core.facets import Facet
 from karmabot.utils import Cache
 
 @thing.facet_classes.register
-class TwitterFacet(thing.ThingFacet):
+class TwitterFacet(Facet):
     name = "twitter"
     commands = command.thing.add_child(command.FacetCommandSet(name))
     
     def __init__(self, thing_):
-        thing.ThingFacet.__init__(self, thing_)
+        super(self, Facet).__init__(self, thing_)
         self.get_info = Cache(self._get_info, expire_seconds=10*60)
     
     @classmethod
@@ -33,19 +33,16 @@ class TwitterFacet(thing.ThingFacet):
                   exclusive=True)
     def unset_twitterer(self, thing, context):
         del self.data
-        self.thing.detach_persistent(self)
+        self.thing.remove_facet(self)
         
     @commands.add(u"{thing} has twitter username {username}",
                   help=u"set {thing}'s twitter username to {username}")
     def set_twitter_username(self, thing, username, context):
         self.username = username
-    
+
     @property
     def username(self):
-        if self.has_data and "username" in self.data:
-            return self.data["username"]
-        else:
-            return self.thing.name
+        return self.data.get("username", self.thing.name)
         
     @username.setter
     def username(self, value):
@@ -66,7 +63,7 @@ class TwitterFacet(thing.ThingFacet):
                    exclusive=True)
 @command.thing_command
 def set_twitterer(thing, context):
-    thing.attach_persistent(TwitterFacet)
+    thing.add_facet(TwitterFacet)
 
 @thing.presenters.register(set(["twitter"]))
 def present(thing, context):

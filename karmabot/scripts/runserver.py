@@ -9,14 +9,6 @@ from twisted.internet import reactor, ssl
 from twisted.python import log
 
 from karmabot.core.client import KarmaBotFactory
-from karmabot.core.facets import (
-    bot,
-    description,
-    help,
-    irc as ircfacet,
-    karma,
-    name,
-)
 
 
 def main():
@@ -67,12 +59,9 @@ def main():
     if not options.port:
         options.port = 6667 if not options.ssl else 9999
 
-    # FIXME: this needs to be replaced with a real facet manager
-    for facet_path in options.facets:
-        execfile(facet_path, globals())
-
     factory = KarmaBotFactory(options.filename, options.nick,
-                              channels, options.trusted, options.password)
+                              channels, options.trusted, options.password,
+                              options.facets)
     if not options.ssl:
         reactor.connectTCP(options.server, options.port, factory)
     else:

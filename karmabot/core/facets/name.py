@@ -3,28 +3,25 @@
 #
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
-from karmabot.core import ircutils
-from karmabot.core.client import thing
-from karmabot.core.commands.sets import CommandSet
-from karmabot.core.thing import ThingFacet
-from karmabot.core.register import facet_registry, presenter_registry
+
+from karmabot.core.commands import CommandSet, action
+from .base import Facet
+from ..ircutils import bold
 
 
-@facet_registry.register
-class NameFacet(ThingFacet):
+class NameFacet(Facet):
     name = "name"
-    commands = thing.add_child(CommandSet(name))
+    commands = action.add_child(CommandSet(name))
+    display_key = 0
 
-    @classmethod
-    def does_attach(cls, thing):
+    def does_attach(cls, subject):
         return True
 
-    @commands.add(u"{thing}\?*", help_str=u"show information about {thing}")
-    def describe(self, context, thing):
-        # this is a thing object not the list of things
-        context.reply(thing.describe(context))
+    @commands.add(u"{subject}\?*",
+                  help_str=u"show information about {subject}")
+    def describe(self, context, subject):
+        # this is a subject object not the list of subjects
+        context.reply(subject.describe(context))
 
-
-@presenter_registry.register(set(["name"]), order=-10)
-def present(thing, context):
-    return u"{name}".format(name=ircutils.bold(thing.name))
+    def present(self, context):
+        return u"%s" % bold(self.subject.name)

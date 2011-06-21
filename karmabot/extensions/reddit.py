@@ -13,15 +13,16 @@ except ImportError:
 from karmabot import thing
 from karmabot import command
 from karmabot.utils import Cache
+from karmabot.core.facets import Facet
 
 
 @thing.facet_classes.register
-class RedditorFacet(thing.ThingFacet):
+class RedditorFacet(Facet):
     name = "redditor"
     commands = command.thing.add_child(command.FacetCommandSet(name))
 
     def __init__(self, thing_):
-        thing.ThingFacet.__init__(self, thing_)
+        super(self, Facet).__init__(self, thing_)
         self.get_info = Cache(self._get_info, expire_seconds=10 * 60)
 
     @classmethod
@@ -33,7 +34,7 @@ class RedditorFacet(thing.ThingFacet):
                   exclusive=True)
     def unset_redditor(self, thing, context):
         del self.data
-        self.thing.detach_persistent(self)
+        self.thing.remove_facet(self)
 
     @commands.add(u"{thing} has reddit username {username}",
                   help=u"set {thing}'s reddit username to {username}")
@@ -42,10 +43,7 @@ class RedditorFacet(thing.ThingFacet):
 
     @property
     def username(self):
-        if self.has_data and "username" in self.data:
-            return self.data["username"]
-        else:
-            return self.thing.name
+        return self.data.get("username", self.thing.name)
 
     @username.setter
     def username(self, value):
@@ -64,7 +62,7 @@ class RedditorFacet(thing.ThingFacet):
                    exclusive=True)
 @command.thing_command
 def set_redditor(thing, context):
-    thing.attach_persistent(RedditorFacet)
+    thing.add_facet(RedditorFacet)
 
 
 @thing.presenters.register(set(["redditor"]))

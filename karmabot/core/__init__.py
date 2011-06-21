@@ -4,3 +4,5 @@
 # This file is part of 'karmabot' and is distributed under the BSD license.
 # See LICENSE for more details.
 #
+
+VERSION = "0.3"
