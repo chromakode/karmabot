@@ -73,6 +73,12 @@ def main():
     # You have no mouth, no legs.
     bot.msg = bot.join = bot.leave = lambda *x:None
 
+    # You can not has HTTP.
+    import urllib
+    def blocked(*args, **kwargs):
+        raise Exception("call blocked while reinkarnating")
+    urllib.urlopen = blocked
+
     # My life is flashing before my eyes...
     for path in paths:
         reincarnate(bot, path)
