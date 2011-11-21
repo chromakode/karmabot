@@ -39,7 +39,7 @@ class DescriptionFacet(thing.ThingFacet):
         return self.data
 
     def present(self):
-        return u", ".join(desc["text"] for desc in self.descriptions) \
+        return u", ".join(desc["text"] for desc in self.descriptions[-12:]) \
             or u"<no description>"
 
 
