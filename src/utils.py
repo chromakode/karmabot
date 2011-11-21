@@ -22,3 +22,11 @@ class Cache:
         
     def reset(self):
         self.last_time = None
+
+def force_unicode(s):
+    try:
+        s = s.decode("utf-8")
+    except UnicodeError:
+        s = s.decode("latin9")
+
+    return s

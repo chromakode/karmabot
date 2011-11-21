@@ -7,6 +7,7 @@ from twisted.python import log
 
 import thing
 import command
+from utils import force_unicode
 
 VERSION = "0.2"
 
@@ -92,7 +93,9 @@ class KarmaBot(irc.IRCClient):
     def privmsg(self, user, channel, msg):
         log.msg("[{channel}] {user}: {msg}".format(channel=channel,
                                                    user=user, msg=msg))
-        msg = msg.decode("utf-8")
+
+        msg = force_unicode(msg)
+        user = force_unicode(user)
         where = self.nickname if channel == self.nickname else channel
         context = Context(user, where, self)
 
