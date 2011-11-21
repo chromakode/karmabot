@@ -82,7 +82,7 @@ class KarmaBot(irc.IRCClient):
         thing = self.things.get_thing(channel, Context(user, channel, self))
         thing.facets["ircchannel"].topic = newTopic
 
-    def msg(self, user, message, length=None):
+    def msg(self, user, message, length=500):
         # Force conversion from unicode to utf-8
         if type(message) is unicode:
             message = message.encode("utf-8")
