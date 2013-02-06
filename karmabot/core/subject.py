@@ -20,7 +20,7 @@ class Subject(object):
     def add_facet(self, facet):
         if str(facet) in self.facets:
             return
-        if not isinstance(facet, str):
+        if isinstance(facet, str):
             facet = facet_registry[facet](self)
         self.facets[str(facet)] = facet
 
