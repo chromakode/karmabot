@@ -145,7 +145,7 @@ class Thing(object):
 
     def add_facet(self, facet):
         facet_type = self._facet_type(facet)
-        if not isinstance(facet, ThingFacet):
+        if not isinstance(facet, ThingFacet) and facet_type in facet_classes:
             facet = facet_classes[facet_type](self)
         self.facets[facet_type] = facet
         
